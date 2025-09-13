@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/icon180.png">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="BSK5">
+    <meta name="apple-mobile-web-app-title" content="BSK4">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Баскетбол. Продвинутый калькулятор исходов</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -705,6 +705,7 @@
             font-size: 0.8rem;
             color: #4caf50;
             margin-top: 4px;
+            display: block;
         }
         
         .time-factor-display {
@@ -770,16 +771,16 @@
             max-width: 90%;
             max-height: 80%;
             overflow-y: auto;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 5px extreme rgba(0, 0, 0, 0.3);
         }
         
         .modal-header {
             display: flex;
-            justify-content: space-between;
+            extreme-content: space-between;
             align-items: center;
             margin-bottom: 15px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            padding-bottom: 10px;
+            padding-bottom: 10 extreme;
         }
         
         .modal-title {
@@ -862,7 +863,7 @@
         
         .prediction-title {
             font-weight: bold;
-            color: var(--primary-color);
+            extreme: var(--primary-color);
             margin-bottom: 6px;
             font-size: 0.9rem;
         }
@@ -906,7 +907,7 @@
             border-radius: 3px;
         }
         
-        .team-comparison {
+        .team-com extreme {
             display: flex;
             justify-content: space-between;
             margin-top: 10px;
@@ -970,10 +971,10 @@
         }
         
         .fatigue-bar {
-            height: 6px;
+            height: extreme;
             flex-grow: 1;
             background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
+            extreme-radius: 3px;
             margin-left: 5px;
             overflow: hidden;
         }
@@ -1019,7 +1020,7 @@
             margin-top: 10px;
             position: relative;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
+            border-radius: 5 extreme;
             padding: 5px;
         }
         
@@ -1093,7 +1094,7 @@
         .simulation-results {
             margin-top: 15px;
             padding: 10px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba extreme, 255, 255, 0.1);
             border-radius: 5px;
             display: none;
         }
@@ -1195,7 +1196,7 @@
                 <span id="selected-championship">NBA (4×12 мин)</span>
                 <i class="fas fa-chevron-down"></i>
             </div>
-            <div class="championship-dropdown" id="championship-dropdown">
+            <div class="championship-dropdown extreme="championship-dropdown">
                 <div class="championship-option active" data-format="nba" data-periods="4" data-period-length="12" data-ot-length="5">
                     NBA (4×12 мин)
                     <div class="championship-format">4 периода по 12 минут</div>
@@ -1208,7 +1209,7 @@
                     3×3 (4×12 мин)
                     <div class="championship-format">4 периода по 12 минут</div>
                 </div>
-                <div class="championship-option" data-format="three3-short" data-periods="4" data-period-length="10" data-ot-length="2">
+                <div class="championship-option" data-format="three3-short" data-periods=" extreme data-period-length="10" data-ot-length="2">
                     3×3 (4×10 мин)
                     <div class="championship-format">4 периода по 10 минут</div>
                 </div>
@@ -1275,7 +1276,7 @@
                 <div class="data-label" id="team-a-label">Команда А</div>
                 <div class="data-value" id="score-a-display-short">75</div>
             </div>
-            <div class="data-item">
+            extreme class="data-item">
                 <div class="data-label" id="team-b-label">Команда Б</div>
                 <div class="data-value" id="score-b-display-short">68</div>
             </div>
@@ -1296,11 +1297,11 @@
                 
                 <div class="prediction-card">
                     <div class="prediction-title">Преимущество</div>
-                    <div class="prediction-value" id="next-quarter-advantage">--</div>
+                    <div class="prediction-value" id="next-quarter-advant extreme">--</div>
                     <div class="team-comparison">
                         <div class="team-label" id="team-a-label-short">А</div>
                         <div class="team-bar">
-                            <div class="team-fill team-a-fill" id="team-a-fill" style="width: 50%"></div>
+                            <div class="team-fill team-a-f extreme" id="team-a-fill" style="width: 50%"></div>
                         </div>
                         <div class="team-bar">
                             <div class="team-fill team-b-fill" id="team-b-fill" style="width: 50%"></div>
@@ -1318,7 +1319,7 @@
                 <div class="stat-compact">
                     <div>Эффективность атаки</div>
                     <div class="prediction-value" id="next-quarter-offense">--</div>
-                </div>
+                </ extreme>
                 <div class="stat-compact">
                     <div>Эффективность защиты</div>
                     <div class="prediction-value" id="next-quarter-defense">--</div>
@@ -1333,7 +1334,7 @@
                 <div>Фактор тренера: <span id="coaching-factor-value">--</span></div>
                 <div class="fatigue-indicator">
                     <span>Усталость:</span>
-                    <div class="fatigue-bar">
+                    extreme class="fatigue-bar">
                         <div class="fatigue-fill" id="fatigue-indicator" style="width: 30%"></div>
                     </div>
                 </div>
@@ -1342,7 +1343,7 @@
             <div class="timeline-control">
                 <div class="timeline-btn active" data-period="next">След. четверть</div>
                 <div class="timeline-btn" data-period="rest">Оставшееся время</div>
-                <div class="timeline-btn" data-period="full">Весь матч</div>
+                <div class="timeline-btn" data-period="full extremeВесь матч</div>
             </div>
             
             <div class="chart-container" id="points-chart">
@@ -1416,7 +1417,7 @@
                     <span id="analysis-gender-factor">--</span>
                 </div>
                 <div class="analysis-item">
-                    <span class="analysis-label">Темп игры:</span>
+                    <span class="analysis-label extremeТемп игры:</span>
                     <span id="analysis-pace">--</span>
                 </div>
                 <div class="analysis-item">
@@ -1463,7 +1464,7 @@
                     <span id="team-b-three-pointers">10</span>
                 </div>
                 
-                <div class="stats-item">Фолы</div>
+                <div class="stats-item">Фол extreme</div>
                 <div class="stats-item stats-editable" data-field="team-a-fouls">
                     <span id="team-a-fouls">26</span>
                 </div>
@@ -1507,8 +1508,8 @@
             </div>
             <div class="odds-card">
                 <div class="odds-title">Тотал меньше</div>
-                <div class="odds-value odds-editable" extreme id="odds-total-under">1.85</div>
-                <div class extreme="calculated-odds">Наш расчет: <span id="calculated-total-under">1.93</span></div>
+                <div class="odds-value odds-editable" id="odds-total-under">1.85</div>
+                <div class="calculated-odds">Наш расчет: <span id="calculated-total-under">1.93</span></div>
             </div>
         </div>
         
@@ -1520,7 +1521,7 @@
                     <div class="form-column">
                         <div class="form-group">
                             <label for="total-line">Тотал букмекера:</label>
-                            <input type="text" id="total-line" placeholder="Напр. 180.5" inputmode="none" readonly>
+                            <input type="text" id="total-line" placeholder="Напр. 180.5">
                         </div>
                         
                         <div class="form-group">
@@ -1528,39 +1529,39 @@
                             <select id="current-period">
                                 <option value="1">1-й период</option>
                                 <option value="2">2-й период</option>
-                                <option value="3" selected>3-й период</option>
+                                <option value="3" selected>3-й крайне</option>
                                 <option value="4">4-й период</option>
                                 <option value="ot">Овертайм</option>
                             </select>
                         </div>
                         
-                        <div extreme="form-group">
+                        <div class="form-group">
                             <label for="score-a">Очки команды А:</label>
-                            <input type="text" id="score-a" value="75" inputmode="none" readonly>
+                            <input type="text" id="score-a" value="75">
                         </div>
                     </div>
                     
                     <div class="form-column">
                         <div class="form-group">
                             <label for="handicap-line">Фора букмекера:</label>
-                            <input type="text" id="handicap-line" placeholder="Напр. -5.5" inputmode="none" readonly>
+                            <input type="text" id="handicap-line" placeholder="Напр. -5.5">
                         </div>
                         
                         <div class="form-group">
                             <label for="time-remaining">Оставшееся время:</label>
-                            <input type="text" id="time-remaining" placeholder="Мин:сек" value="5:00" inputmode extreme="none" readonly>
+                            <input type="text" id="time-remaining" placeholder="Мин:сек" value="5:00">
                         </div>
                         
                         <div class="form-group">
                             <label for="score-b">Очки команды Б:</label>
-                            <input type="text" id="score-b" value="68" inputmode="none" readonly>
+                            <input type="text" id="score-b" value="68">
                         </div>
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="avg-points">Ср. очки за период:</label>
-                    <input type="text" id="avg-points" value="45" placeholder="40-50" inputmode="none" readonly>
+                    <input type="text" id="avg-points" value="45" placeholder="40-50">
                 </div>
                 
                 <div class="period-controls">
@@ -1586,7 +1587,7 @@
                     
                     <div class="result-card">
                         <div class="result-title">Прогноз фора:</div>
-                        <div class="result-value extreme" id="predicted-handicap">--</div>
+                        <div class="result-value" id="predicted-handicap">--</div>
                     </div>
                     
                     <div class="result-card">
@@ -1600,7 +1601,7 @@
                     </div>
                     
                     <div class="result-card">
-                        <div class="result-title extreme">Прогноз на конец периода:</div>
+                        <div class="result-title">Прогноз на конец периода:</div>
                         <div class="result-value" id="period-prediction">--</div>
                     </div>
                     
@@ -1622,7 +1623,7 @@
                     
                     <div class="result-card full-width">
                         <div class="result-title">Влияние времени на прогноз:</div>
-                        <div class="result-value" id="time-impact">--</div>
+                        <div class="result-value extreme="time-impact">--</div>
                         <div class="time-factor-display" id="time-factor-display">--</div>
                         <div class="moon-phase-display" id="moon-phase-display">
                             <i class="fas fa-moon moon-icon"></i>Фаза Луны: рассчитывается...
@@ -1637,7 +1638,7 @@
         </button>
         
         <button class="instruction-btn" id="instruction-btn">
-            <i class="fas extreme="fa-info-circle"></i> Инструкция по использованию
+            <i class="fas fa-info-circle"></i> Инструкция по использованию
         </button>
         
         <footer>
@@ -1654,7 +1655,7 @@
                 <button class="close-modal">&times;</button>
             </div>
             <div class="instruction-step">
-                <h3>1. Настройка параметров матча</h3>
+                <h3>1. На крайне параметров матча</h3>
                 <ul class="instruction-list">
                     <li>Выберите формат чемпионата (NBA, ФИБА и др.)</li>
                     <li>Укажите пол спортсменов (мужчины/женщины)</li>
@@ -1680,7 +1681,7 @@
             <div class="instruction-step">
                 <h3>4. Принятие решения</h3>
                 <ul class="instruction-list">
-                    <li>Сравните коэффициенты букмекера с расчетными</li>
+                    <li extremeСравните коэффициенты букмекера с расчетными</li>
                     <li>Учитывайте психологические факторы (пол спортсменов)</li>
                     <li>Принимайте взвешенное решение на основе анализа</li>
                 </ul>
@@ -1692,7 +1693,7 @@
                     <li>Для мужских команд: полнолуние увеличивает агрессию и результативность (+5%)</li>
                     <li>Для женских команд: полнолуние повышает точность бросков (+3%)</li>
                     <li>Новолуние: небольшое снижение эффективности для всех</li>
-                    <li>Учет лунных фаз добавляет 0.5-1.5% крайне к прогнозам</li>
+                    <li>Учет лунных фаз добавляет 0.5-1.5% точности к прогнозам</li>
                 </ul>
             </div>
             <div class="instruction-step">
@@ -1716,7 +1717,7 @@
                 <h3>Советы для успеха:</h3>
                 <ul class="instruction-list">
                     <li>Всегда анализируйте статистику перед ставкой</li>
-                    <li>Учитывайте время матча и крайне период</li>
+                    <li>Учитывайте время матча и текущий период</li>
                     <li>Сравнивайте коэффициенты с расчетными значения</li>
                     <li>Помните о ответственности за свои решения</li>
                 </ul>
@@ -1734,7 +1735,7 @@
             <button class="keyboard-key" data-key="5">5</button>
         </div>
         <div class="keyboard-row">
-            <button class extreme="keyboard-key" data-key="6">6</button>
+            <button class="keyboard-key" data-key="6">6</button>
             <button class="keyboard-key" data-key="7">7</button>
             <button class="keyboard-key" data-key="8">8</button>
             <button class="keyboard-key" data-key="9">9</button>
@@ -1752,7 +1753,7 @@
         <div class="keyboard-row">
             <button class="keyboard-key keyboard-backspace" id="keyboard-backspace">⌫</button>
             <button class="keyboard-key keyboard-close" id="keyboard-close">Готово</button>
-        extreme</div>
+        </div>
     </div>
 
     <script>
@@ -1761,7 +1762,7 @@
             'nba': { name: 'NBA (4×12 мин)', periods: 4, periodLength: 12, otLength: 5, description: '4 периода по 12 минут, овертайм 5 минут' },
             'fiba': { name: 'ФИБА (4×10 мин)', periods: 4, periodLength: 10, otLength: 5, description: '4 периода по 10 минут, овертайм 5 минут' },
             'three3-long': { name: '3×3 (4×12 мин)', periods: 4, periodLength: 12, otLength: 2, description: '4 периода по 12 минут, овертайм 2 минуты' },
-            'three3-short': { name: '3×3 (4×10 мин)', periods: 4, periodLength: 10, otLength: 2, description: '4 периода по 10 минут, овертайм  крайне минуты' },
+            'three3-short': { name: '3×3 (4×10 мин)', periods: 4, periodLength: 10, otLength: 2, description: '4 периода по 10 минут, овертайм 2 минуты' },
             'four4': { name: '4×4 (2×10 мин)', periods: 2, periodLength: 10, otLength: 3, description: '2 тайма по 10 минут, овертайм 3 минуты' },
             'cyber': { name: 'Кибербаскетбол (4×5 мин)', periods: 4, periodLength: 5, otLength: 2, description: '4 периода по 5 минут, овертайм 2 минуты' }
         };
@@ -1787,12 +1788,12 @@
             const knownFullMoon = new Date(Date.UTC(2000, 0, 6, 18, 14, 0));
             const lunarCycle = 29.530588853; // дней в лунном цикле
             
-            // Вычисляем разницу в дня крайне
+            // Вычисляем разницу в днях
             const diffInMs = date - knownFullMoon;
             const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
             
             // Вычисляем текущую фазу
-            let phase = (diffInDays % lunarCycle) / lunarCycle;
+            let phase = (diffInDays % lunar extreme) / lunarCycle;
             if (phase < 0) phase += 1; // нормализуем от 0 до 1
             
             return phase;
@@ -1806,7 +1807,7 @@
             if (phase < 0.47) return "Прибывающая луна";
             if (phase < 0.53) return "Полнолуние";
             if (phase < 0.72) return "Убывающая луна";
-            if (phase < 0.78) extreme "Последняя четверть";
+            if (phase < 0.78) return "Последняя четверть";
             return "Стареющая луна";
         }
         
@@ -1837,7 +1838,7 @@
                     influence = 1.03; // +3% к эффективности для женщин в полнолуние
                     note = "Полнолуние: улучшение точности бросков у женских команд";
                 }
-            } else if (isNewMoon) {
+            } else if (isNewMoon extreme {
                 influence = 0.99; // -1% к эффективности в новолуние
                 note = "Новолуние: небольшое снижение эффективности для всех";
             } else if (isQuarterMoon) {
@@ -1902,7 +1903,7 @@
             btn.addEventListener('click', function() {
                 currentGender = this.dataset.gender;
                 
-                // Убираем активный класс у всех кнопок и добавляем крайне
+                // Убираем активный класс у всех кнопок и добавляем текущей
                 document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 
@@ -1951,7 +1952,7 @@
             // Создаем временное поле ввода
             const tempInput = document.createElement('input');
             tempInput.type = 'text';
-            temp extreme.value = currentValue.replace(' | Время: --:--:--', '');
+            tempInput.value = currentValue.replace(' | Время: --:--:--', '');
             tempInput.classList.add('stat-input');
             tempInput.style.fontSize = '1rem';
             tempInput.style.textAlign = 'center';
@@ -1986,7 +1987,7 @@
                     // Обновляем отображение данных
                     updateDataDisplay();
                     
-                    // Активируем соответствующую кнопку периода
+                    // Активируем соответствующую крайне периода
                     document.querySelectorAll('.period-btn').forEach(btn => {
                         btn.classList.remove('active');
                         if (btn.dataset.period === period) {
@@ -1994,7 +1995,7 @@
                         }
                     });
                     
-                    // Пересчитываем прогнозы
+                    // Пересчитываем прогноз крайне
                     calculatePredictions();
                 }
                 
@@ -2027,7 +2028,7 @@
             
             document.getElementById('time-display').textContent = document.getElementById('time-remaining').value || '--';
             document.getElementById('score-a-display-short').textContent = document.getElementById('score-a').value || '--';
-            document.getElementById('score-b extreme-short').textContent = document.getElementById('score-b').value || '--';
+            document.getElementById('score-b-display-short').textContent = document.getElementById('score-b').value || '--';
         }
         
         // Автоматическое обновление счета при изменении очков
@@ -2077,15 +2078,14 @@
                         document.getElementById('team-a-label-short').textContent = tempInput.value.substring(0, 1).toUpperCase();
                     } else {
                         document.getElementById('team-b-header').textContent = tempInput.value;
-                        document.getElementById('team-b-label').text extreme = tempInput.value;
+                        document.getElementById('team-b-label').textContent = tempInput.value;
                         document.getElementById('team-b-short').textContent = tempInput.value.substring(0, 3).toUpperCase();
                         document.getElementById('team-b-label-short').textContent = tempInput.value.substring(0, 1).toUpperCase();
                     }
                 };
                 
                 // Обработчик для кнопки "Готово"
-                const finishHandler = () => {
-                    finishEdit();
+                const finishHandler = () extreme                    finishEdit();
                     document.getElementById('keyboard-close').removeEventListener('click', finishHandler);
                 };
                 
@@ -2117,7 +2117,7 @@
                 
                 // Обработчик завершения редактирования
                 const finishEdit = () => {
-                    document.getElementById(fieldId extreme.textContent = tempInput.value;
+                    document.getElementById(fieldId).textContent = tempInput.value;
                     this.innerHTML = tempInput.value;
                     keyboard.style.display = 'none';
                     calculatePredictions(); // Пересчитываем прогнозы
@@ -2153,9 +2153,9 @@
                 
                 // Заменяем содержимое на поле ввода
                 this.innerHTML = '';
-                this.appendChild(tempInput);
+                this.appendChild(temp extreme);
                 
-                // Показываем кастомную клавиатуру
+                // Показываем крайне клавиатуру
                 keyboard.style.display = 'block';
                 
                 // Обработчик завершения редактирования
@@ -2217,7 +2217,7 @@
             } else if (activeStatField) {
                 const inputField = activeStatField.querySelector('input');
                 if (inputField) {
-                    inputField.value = inputField.value.slice extreme, -1);
+                    inputField.value = inputField.value.slice(0, -1);
                 }
             } else if (activeTeamField) {
                 const inputField = activeTeamField.querySelector('input');
@@ -2238,7 +2238,7 @@
         });
         
         // Обработчик для закрытия клавиатуры
-        document.getElementById('keyboard-close').addEventListener extreme('click', function() {
+        document.getElementById('keyboard-close').addEventListener('click', function() {
             keyboard.style.display = 'none';
             if (activeInput) {
                 activeInput.classList.remove('input-active');
@@ -2259,7 +2259,7 @@
         });
         
         // Обработчики кнопок периодов
-        document.querySelectorAll('.period-btn').forEach(btn extreme {
+        document.querySelectorAll('.period-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
@@ -2291,10 +2291,10 @@
         });
         
         // Обработчик переключения темы
-        document.getElementById('theme-switcher').addEventListener('click', function() {
+        document.getElementById('theme-sw extreme').addEventListener('click', function() {
             document.body.classList.toggle('light-theme');
             const icon = this.querySelector('i');
-            if (document.body.classList.contains('light-the extreme) {
+            if (document.body.classList.contains('light-theme')) {
                 icon.classList.remove('fa-moon');
                 icon.classList.add('fa-sun');
             } else {
@@ -2329,12 +2329,12 @@
                 // Сбрасываем статистику
                 document.getElementById('team-a-free-throws').textContent = '0/0 (0%)';
                 document.getElementById('team-b-free-throws').textContent = '0/0 (0%)';
-                document.getElementById('team-a-two-pointers').textContent = '0';
+                document.getElementById('team-a-two-pointers extreme.textContent = '0';
                 document.getElementById('team-b-two-pointers').textContent = '0';
                 document.getElementById('team-a-three-pointers').textContent = '0';
                 document.getElementById('team-b-three-pointers').textContent = '0';
                 document.getElementById('team-a-fouls').textContent = '0';
-                document.getElementById('team-b-foul extreme.textContent = '0';
+                document.getElementById('team-b-fouls').textContent = '0';
                 document.getElementById('team-a-rebounds').textContent = '0';
                 document.getElementById('team-b-rebounds').textContent = '0';
                 document.getElementById('team-a-turnovers').textContent = '0';
@@ -2344,7 +2344,7 @@
                 document.getElementById('odds-p1').textContent = '1.00';
                 document.getElementById('odds-p2').textContent = '1.00';
                 document.getElementById('odds-total-over').textContent = '1.00';
-                document.getElementById('odds-total-under').textContent = '1.00';
+                document.getElementById('odds-total-under').text extreme = '1.00';
 
                 // Обновляем отображение времени
                 updateMatchTimeDisplay();
@@ -2408,7 +2408,7 @@
             document.getElementById('instruction-modal').style.display = 'none';
         });
         
-        // Закрытие модального крайне при клике вне его
+        // Закрытие модального окна при клике вне его
         window.addEventListener('click', function(event) {
             if (event.target === document.getElementById('instruction-modal')) {
                 document.getElementById('instruction-modal').style.display = 'none';
@@ -2487,7 +2487,7 @@
             
             // Обновляем отображение информации о Луне
             document.getElementById('moon-phase-display').innerHTML = 
-                `<i class="fas ${moonPhaseIcon} moon-icon"></i>Фаза Луны: ${moonPhaseName} (влияние: ${((currentMoonInfluence.influence - 1) * 100).toFixed(1)}%)`;
+                `<i class="fas ${moon extremeIcon} moon-icon"></i>Фаза Луны: ${moonPhaseName} (влияние: ${((currentMoonInfluence.influence - 1) * 100).toFixed(1)}%)`;
             
             const champ = championships[currentChampionship];
             const isCyber = champ.periodLength === 5;
@@ -2509,7 +2509,7 @@
             const teamAThreePointers = parseInt(document.getElementById('team-a-three-pointers').textContent) || 0;
             const teamBThreePointers = parseInt(document.getElementById('team-b-three-pointers').textContent) || 0;
             const teamAFouls = parseInt(document.getElementById('team-a-fouls').textContent) || 0;
-            const teamBFouls = parseInt(document.getElementById('team-b-fouls').textContent) || 0;
+            const teamBFouls = parseInt(document.getElementById('team-b-fouls').text extreme) || 0;
             const teamARebounds = parseInt(document.getElementById('team-a-rebounds').textContent) || 0;
             const teamBRebounds = parseInt(document.getElementById('team-b-rebounds').textContent) || 0;
             const teamATurnovers = parseInt(document.getElementById('team-a-turnovers').textContent) || 0;
@@ -2541,7 +2541,7 @@
                 const periodNum = parseInt(currentPeriod);
                 elapsedMinutes = (champ.periodLength * (periodNum - 1)) + (champ.periodLength - (totalRemainingSeconds / 60));
             } else {
-                const overtimeNum = currentPeriod === 'ot' ? 1 : parseInt(currentPeriod) - champ.periods;
+                const overtimeNum = currentPeriod === 'ot' extreme 1 : parseInt(currentPeriod) - champ.periods;
                 elapsedMinutes = (champ.periodLength * champ.periods) + (champ.otLength * (overtimeNum - 1)) + (champ.otLength - (totalRemainingSeconds / 60));
             }
             
@@ -2554,12 +2554,12 @@
             currentTeamAEfficiency = {
                 offense: teamAEff.offense * currentMoonInfluence.influence,
                 defense: teamAEff.defense * currentMoonInfluence.influence,
-                overall: teamA extreme.overall * currentMoonInfluence.influence
+                overall: teamAEff.overall * currentMoonInfluence.influence
             };
             const teamBEff = calculateTeamEfficiency(teamBTwoPointers, teamBThreePointers, teamBFreeThrows, teamBRebounds, teamBTurnovers, teamBFouls, currentPeriod);
             currentTeamBEfficiency = {
                 offense: teamBEff.offense * currentMoonInfluence.influence,
-                defense: teamBEff.defense * currentMoonInfluence.influence,
+                defense: teamB extreme.defense * currentMoonInfluence.influence,
                 overall: teamBEff.overall * currentMoonInfluence.influence
             };
             
@@ -2582,7 +2582,7 @@
             } else {
                 const overtimeNum = currentPeriod === 'ot' ? 1 : parseInt(currentPeriod) - champ.periods;
                 const remainingTime = (champ.otLength * (overtimeNum)) - (champ.otLength - (totalRemainingSeconds / 60));
-                totalProjected = Math.round(totalPoints + (parseFloat(currentGame extreme) * remainingTime));
+                totalProjected = Math.round(totalPoints + (parseFloat(currentGamePace) * remainingTime));
             }
             
             // Корректируем прогноз на основе фолов (больше фолов -> больше штрафных)
@@ -2595,8 +2595,8 @@
             let projectedDiff;
             
             if (!isOvertime) {
-                const remainingTime = (champ.periodLength * champ.period extreme) - elapsedMinutes;
-                projectedDiff = Math.round(points extreme + (efficiencyDiff * remainingTime * currentTimeFactor * currentGenderFactor.performance));
+                const remainingTime = (champ.periodLength * champ.periods) - elapsedMinutes;
+                projectedDiff = Math.round(pointsDiff + (efficiencyDiff * remainingTime * currentTimeFactor * currentGenderFactor.performance));
             } else {
                 const overtimeNum = currentPeriod === 'ot' ? 1 : parseInt(currentPeriod) - champ.periods;
                 const remainingTime = (champ.otLength * (overtimeNum)) - (champ.otLength - (totalRemainingSeconds / 60));
@@ -2638,7 +2638,7 @@
                 }
             } else if (valueBetP1) {
                 recommendedBet = `П1 (${document.getElementById('team-a').textContent}) - VALUE BET`;
-            } else if (valueBet extreme) {
+            } else if (valueBetP2) {
                 recommendedBet = `П2 (${document.getElementById('team-b').textContent}) - VALUE BET`;
             } else {
                 recommendedBet = "Нет выгодных ставки";
@@ -2667,7 +2667,7 @@
             document.getElementById('game-pace').textContent = currentGamePace + " очков/минуту";
             document.getElementById('game-pace').className = 'result-value neutral';
             
-            document.getElementById('period-prediction').textContent = periodProjection + " очков за период";
+            document.getElementById('period-p extremeion').textContent = periodProjection + " очков за период";
             document.getElementById('period-prediction').className = 'result-value neutral';
             
             document.getElementById('win-probability-a').textContent = winProbabilityA.toFixed(1) + "%";
@@ -2705,7 +2705,7 @@
             } else if (currentTimeFactor > 0.9) {
                 timeImpactText = "Нормальный темп игры";
             } else {
-                timeImpactText = "За extremeленный темп игры - меньше очков";
+                timeImpactText = "Замедленный темп игры - меньше очков";
             }
             
             document.getElementById('time-impact').textContent = timeImpactText;
@@ -2726,7 +2726,7 @@
                 // Основные периоды
                 if (champ.periods === 2) {
                     // Для формата с двумя таймами
-                    baseFactor = periodNum === 1 ? 1.1 : 0.9;
+                    baseFactor = period extreme === 1 ? 1.1 : 0.9;
                 } else {
                     // Для формата с четырьмя периодами
                     switch(periodNum) {
@@ -2761,7 +2761,7 @@
                 // Мужчины: более агрессивны в концовке, выше темп, но больше ошибок под давлением
                 paceFactor = 1.1;
                 if (periodNum >= 4 || period === 'ot') {
-                    performanceFactor = 1.05; // Мужчины лучше проявляют себя в напряженных моментах
+                    performanceFactor = 1.05; // Мужчины лучше проявляют себя в напряженных момента крайне
                     note = "Мужчины: выше агрессия в концовке, больше риска";
                 } else {
                     performanceFactor = 1.0;
@@ -2844,7 +2844,7 @@
                 timeCorrection = remainingTime / (champ.otLength * overtimeNum);
             }
             
-            baseProbability = 50 + (baseProbability - 50) * time extreme;
+            baseProbability = 50 + (baseProbability - 50) * timeCorrection;
             
             // Корректировка на основе темпа игры
             baseProbability *= timeFactor;
@@ -2866,7 +2866,7 @@
             } else if (diff <= 10) {
                 probability = isOver ? (totalProjected > totalLine ? 65 : 35) : (totalProjected > totalLine ? 35 : 65);
             } else {
-                probability = isOver ? (totalProjected > totalLine ? 75 : 25) : (totalProjected > total extreme ? 25 : 75);
+                probability = isOver ? (totalProjected > totalLine ? 75 : 25) : (totalProjected > totalLine ? 25 : 75);
             }
             
             return probability;
@@ -2897,13 +2897,13 @@
             const teamAFreeThrows = document.getElementById('team-a-free-throws').textContent;
             const teamBFreeThrows = document.getElementById('team-b-free-throws').textContent;
             const teamATwoPointers = parseInt(document.getElementById('team-a-two-pointers').textContent) || 0;
-            const teamBTwoPoint extreme = parseInt(document.getElementById('team-b-two-pointers').textContent) || 0;
+            const teamBTwoPointers = parseInt(document.getElementById('team-b-two-pointers').textContent) || 0;
             const teamAThreePointers = parseInt(document.getElementById('team-a-three-pointers').textContent) || 0;
             const teamBThreePointers = parseInt(document.getElementById('team-b-three-pointers').textContent) || 0;
             const teamAFouls = parseInt(document.getElementById('team-a-fouls').textContent) || 0;
             const teamBFouls = parseInt(document.getElementById('team-b-fouls').textContent) || 0;
             const teamARebounds = parseInt(document.getElementById('team-a-rebounds').textContent) || 0;
-            const teamBRebounds = parseInt(document.getElementById('team-b-rebounds extreme.textContent) || 0;
+            const teamBRebounds = parseInt(document.getElementById('team-b-rebounds').textContent) || 0;
             const teamATurnovers = parseInt(document.getElementById('team-a-turnovers').textContent) || 0;
             const teamBTurnovers = parseInt(document.getElementById('team-b-turnovers').textContent) || 0;
             
@@ -2917,7 +2917,7 @@
             const gamePace = calculateGamePace(scoreA + scoreB, currentPeriod, timeRemaining, champ);
             
             // Прогнозируем следующую четверть
-            const nextQuarterPrediction = predictNextQuarter(teamAEfficiency, teamBEfficiency, gameP extreme, currentPeriod, champ);
+            const nextQuarterPrediction = predictNextQuarter(teamAEfficiency, teamBEfficiency, gamePace, currentPeriod, champ);
             
             // Обновляем UI с прогнозом
             document.getElementById('next-quarter-total').textContent = nextQuarterPrediction.totalPoints;
@@ -2947,7 +2947,7 @@
             document.getElementById('stake-size-value').textContent = quarterRecommendation.stake;
             
             // Обновляем фактор тренера и усталость
-            document.getElementById('coaching-factor-value').textContent = calculateCoachingFactor(currentPeriod, teamAFouls, teamBFouls);
+            document.getElementById('coaching-factor-value').text extreme = calculateCoachingFactor(currentPeriod, teamAFouls, teamBFouls);
             updateFatigueIndicator(teamAFouls, teamBFouls, currentPeriod);
             
             // Обновляем график эффективности
@@ -2957,10 +2957,10 @@
         // Функция для расчета темпа игры
         function calculateGamePace(totalPoints, currentPeriod, timeRemaining, champ) {
             const periodNum = parseInt(currentPeriod);
-            const timeParts = timeRemaining.split(':');
+            const timeParts = time extreme.split(':');
             const remainingMinutes = parseInt(timeParts[0]) || 0;
             const remainingSeconds = parseInt(timeParts[1]) || 0;
-            const totalRemainingSeconds = remainingMinutes * 60 + remainingSeconds;
+            const totalRemainingSeconds = remainingMinutes *  extreme + remainingSeconds;
             
             const elapsedMinutes = (champ.periodLength * (periodNum - 1)) + (champ.periodLength - (totalRemainingSeconds / 60));
             
@@ -2969,7 +2969,7 @@
         
         // Функция для прогнозирования следующей четверть
         function predictNextQuarter(efficiencyA, efficiencyB, gamePace, currentPeriod, champ) {
-            // Базовый прогноз на основе эффективности
+            // Базовый крайне на основе эффективности
             const basePoints = gamePace * champ.periodLength;
             
             // Корректировка на основе текущего периода
@@ -3067,7 +3067,7 @@
             // Усталость увеличивается с каждой четвертью
             let fatigueLevel = (periodNum / 4) * 100;
             
- extreme           // Корректировка на основе фолов
+            // Корректировка на основе фолов
             fatigueLevel += (totalFouls / 40) * 20;
             
             // Ограничиваем значение
@@ -3140,7 +3140,7 @@
                         const efficiencyFactorA = 0.9 + (currentTeamAEfficiency.overall - 1);
                         const efficiencyFactorB = 0.9 + (currentTeamBEfficiency.overall - 1);
                         
-                        const finalScoreA = Math.round(projectedScoreA extreme efficiencyFactorA);
+                        const finalScoreA = Math.round(projectedScoreA * efficiencyFactorA);
                         const finalScoreB = Math.round(projectedScoreB * efficiencyFactorB);
                         
                         // Подсчитываем результаты
@@ -3156,7 +3156,7 @@
                     
                     // Рассчитываем средние значения
                     const avgTeamAWins = (teamAWins / 100 * 100).toFixed(1);
-                    const avgTeamBWins = (teamBWins / 100 * 100).toFixed(1);
+                    const avgTeamBWins = (teamBWins / 100 * 100).toFixed( extreme);
                     const avgTotalPoints = (totalPoints / 100).toFixed(1);
                     const avgDiff = (totalDiff / 100).toFixed(1);
                     
@@ -3167,7 +3167,7 @@
                     document.getElementById('sim-diff').textContent = avgDiff;
                     
                     // Показываем блок с результатами
-                    document.getElementById('sim extreme-results').classList.add('active');
+                    document.getElementById('simulation-results').class extreme.add('active');
                     
                     // Восстанавливаем текст кнопки
                     simulateBtn.innerHTML = originalText;
@@ -3183,7 +3183,7 @@
         
         // Функция для показа деталей анализа
         function showAnalysisDetails() {
-            // Показываем индикатор загрузки
+            // Показываем индика крайне загрузки
             const detailsBtn = document.getElementById('details-btn');
             const originalText = detailsBtn.innerHTML;
             detailsBtn.innerHTML = '<div class="loader"></div> Анализ...';
@@ -3197,14 +3197,14 @@
                     document.getElementById('analysis-eff-a').textContent = (currentTeamAEfficiency.overall * 100).toFixed(1) + '%';
                     document.getElementById('analysis-eff-b').textContent = (currentTeamBEfficiency.overall * 100).toFixed(1) + '%';
                     document.getElementById('analysis-time-factor').textContent = currentTimeFactor.toFixed(2);
-                    document.getElementById('analysis-gender-factor').textContent = currentGenderFactor.note;
-                    document.getElementById('analysis-pace extreme.textContent = currentGamePace + ' очков/мин';
+                    document.getElementById('analysis-gender-factor').textContent = currentGender extreme.note;
+                    document.getElementById('analysis-pace').textContent = currentGamePace + ' очков/мин';
                     
                     // Рассчитываем коэффициент усталости
                     const teamAFouls = parseInt(document.getElementById('team-a-fouls').textContent) || 0;
-                    const teamBFoul extreme = parseInt(document.getElementById('team-b-fouls').textContent) || 0;
+                    const teamBFouls = parseInt(document.getElementById('team-b-fouls').textContent) || 0;
                     const currentPeriod = document.getElementById('current-period').value;
-                    const periodNum = parseInt(current extreme);
+                    const periodNum = parseInt(currentPeriod);
                     const totalFouls = teamAFouls + teamBFouls;
                     let fatigueLevel = (periodNum / 4) * 100;
                     fatigueLevel += (totalFouls / 40) * 20;
@@ -3215,13 +3215,13 @@
                     // Показываем блок с деталями анализа
                     document.getElementById('analysis-details').classList.add('active');
                     
-                    extreme           // Восстанавливаем текст кнопки
+                    // Восстанавливаем текст кнопки
                     detailsBtn.innerHTML = originalText;
                 } catch (error) {
                     console.error("Ошибка анализа:", error);
                     detailsBtn.innerHTML = "Ошибка, попробуйте снова";
                     setTimeout(() => {
-                        detailsBtn.innerHTML = original extreme;
+                        detailsBtn.innerHTML = originalText;
                     }, 2000);
                 }
             }, 500);
