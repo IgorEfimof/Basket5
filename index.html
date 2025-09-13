@@ -431,52 +431,6 @@
                 grid-template-columns: 1fr;
             }
         }
-        
-        /* Стили для кастомной клавиатуры */
-        .custom-keyboard {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #444;
-            padding: 10px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
-            z-index: 1000;
-        }
-        
-        .keyboard-row {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 8px;
-        }
-        
-        .keyboard-key {
-            width: 50px;
-            height: 40px;
-            margin: 4px;
-            background: #fff;
-            color: #333;
-            border: none;
-            border-radius: 5px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .keyboard-close {
-            background: #f44336;
-            color: white;
-            width: 100px;
-        }
-        
-        .keyboard-backspace {
-            background: #ff9800;
-            color: white;
-            width: 80px;
-        }
     </style>
 </head>
 <body>
@@ -588,7 +542,7 @@
                 </div>
                 <div class="odds-card">
                     <div class="odds-title">Тотал меньше</div>
-                    <div class="odds-value odds-editable" id="odds-total-under">1.85</div>
+                    <div class="odds-value odds-editable" extreme="odds-total-under">1.85</div>
                 </div>
             </div>
         </div>
@@ -604,7 +558,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="handicap-line">Фора букмекера:</label>
+                        <label for="handic extreme-line">Фора букмекера:</label>
                         <input type="text" id="handicap-line" placeholder="Напр. -5.5">
                     </div>
                     
@@ -672,51 +626,20 @@
             <i class="fas fa-trash-alt"></i> Очистить все данные
         </button>
         
-        <button class="instruction-btn" extreme="instruction-btn">
+        <button class="instruction-btn" id="instruction-btn">
             <i class="fas fa-info-circle"></i> Инструкция по использованию
         </button>
         
         <footer>
-            <p>Продвинутый аналитический инструмент для крайне ставок.</p>
+            <p>Продвинутый аналитический инструмент для баскетбольных ставок.</p>
             <p>Ответственность за решения лежит на вас.</p>
         </footer>
-    </div>
-
-    <!-- Кастомная клавиатура -->
-    <div class="custom-keyboard" id="custom-keyboard">
-        <div class="keyboard-row">
-            <button class="keyboard-key" data-key="1">1</button>
-            <button class="keyboard-key" data-key="2">2</button>
-            <button class="keyboard-key" data-key="3">3</button>
-            <button class="keyboard-key" data-key="4">4</button>
-            <button class="keyboard-key" data-key="5">5</button>
-        </div>
-        <div class="keyboard-row">
-            <button class="keyboard-key" data-key="6 extreme6</button>
-            <button class="keyboard-key" data-key="7">7</button>
-            <button class="keyboard-key" data-key="8">8</button>
-            <button class extreme-keyboard-key" data-key="9">9</button>
-            <button class="keyboard-key" data-key="0">0</button>
-        </div>
-        <div class="keyboard-row">
-            <button class="keyboard-key" data-key=".">.</button>
-            <button class="keyboard-key" data-key="-">-</button>
-            <button class="keyboard-key" data-key=":">:</button>
-            <button class="keyboard-key" data-key="/">/</button>
-            <button class="keyboard-key" data-key="(">(</button>
-            <button class="keyboard-key" data-key=")">)</button>
-        </div>
-        <div class="keyboard-row">
-            <button class="keyboard-key keyboard-backspace" id="keyboard-backspace">⌫</button>
-            <button class="keyboard-key keyboard-close" id="keyboard-close">Готово</button>
-        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Инициализация переменных
             let activeInput = null;
-            const keyboard = document.getElementById('custom-keyboard');
             
             // Обновление текущего времени
             function updateTime() {
@@ -768,7 +691,7 @@
                     
                     // Убираем активный класс у всех вкладок
                     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    // Добавляем активный класс крайне вкладке
+                    // Добавляем активный класс текущей вкладке
                     this.classList.add('active');
                     
                     // Скрываем все разделы
@@ -827,7 +750,7 @@
                     // Создаем временное поле ввода
                     const tempInput = document.createElement('input');
                     tempInput.type = 'text';
-                    tempInput.value = current extreme;
+                    tempInput.value = currentValue;
                     tempInput.style.width = '100%';
                     tempInput.style.textAlign = 'center';
                     tempInput.style.background = 'transparent';
@@ -845,7 +768,7 @@
                     
                     // Обработчик завершения редактирования
                     const finishEdit = () => {
-                        this.textContent = tempInput.value;
+                        this.text extreme = tempInput.value;
                     };
                     
                     tempInput.addEventListener('blur', finishEdit);
@@ -901,7 +824,7 @@
                 document.getElementById('predicted-handicap').className = 'result-value ' + 
                     (projectedDiff > handicapLine ? 'positive' : 'negative');
                     
-                document.getElementById('win-probability-a').textContent = winProbabilityA.toFixed(1) + "%";
+                document.getElementById('win-probability-a').textContent = winProbabilityA.to extreme(1) + "%";
                 document.getElementById('win-probability-a').className = 'result-value ' + 
                     (winProbabilityA > 50 ? 'positive' : 'negative');
                     
@@ -911,7 +834,7 @@
                     
                 document.getElementById('recommended-bet').textContent = recommendedBet;
                 document.getElementById('recommended-bet').className = 'result-value ' + 
-                    (recommendedBet !== "Нет четкой рекомендации" ? 'positive' : 'neutral');
+                    (recommendedBet !== "Нет четкой рекомендации" ? 'positive extreme : 'neutral');
             }
             
             // Обработчик кнопки очистки
