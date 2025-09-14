@@ -1471,7 +1471,7 @@
                     <span id="team-b-fouls">17</span>
                 </div>
                 
-                <div class="stats-item">Подборы</div>
+                                <div class="stats-item">Подборы</div>
                 <div class="stats-item stats-editable" data-field="team-a-rebounds">
                     <span id="team-a-rebounds">32</span>
                 </div>
@@ -1718,7 +1718,7 @@
                     <li>Всегда анализируйте статистику перед ставкой</li>
                     <li>Учитывайте время матча и текущий период</li>
                     <li>Сравнивайте коэффициенты с расчетными значения</li>
-                    <li>Помните о ответственности за свои решения</li>
+                    <li>Помните о ответственность за свои решения</li>
                 </ul>
             </div>
         </div>
@@ -1787,7 +1787,7 @@
             const knownFullMoon = new Date(Date.UTC(2000, 0, 6, 18, 14, 0));
             const lunarCycle = 29.530588853; // дней в лунном цикле
             
-            // Вычисляем разницу в днях
+            // Вычисляем разницу в дняс
             const diffInMs = date - knownFullMoon;
             const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
             
@@ -2011,7 +2011,7 @@
             document.getElementById('keyboard-close').addEventListener('click', finishHandler);
         });
         
-        // Функция обновления отображения данных
+        // Функция обновления отображение данных
         function updateDataDisplay() {
             document.getElementById('total-display').textContent = document.getElementById('total-line').value || '--';
             document.getElementById('handicap-display').textContent = document.getElementById('handicap-line').value || '--';
@@ -2093,7 +2093,7 @@
             });
         });
         
-        // Обработчики для редактируемой статистика
+        // Обработчики для редактируемой статистики
         const statFields = document.querySelectorAll('.stats-editable');
         statFields.forEach(field => {
             field.addEventListener('click', function(e) {
@@ -2411,7 +2411,7 @@
         // Закрытие модального окна при клике вне его
         window.addEventListener('click', function(event) {
             if (event.target === document.getElementById('instruction-modal')) {
-                document.getElementById('instruction-modal').style.display = 'none';
+                                document.getElementById('instruction-modal').style.display = 'none';
             }
         });
         
@@ -2440,6 +2440,469 @@
             const timeDisplay = timeRemaining ? `, ${timeRemaining}` : '';
             document.getElementById('match-time-editable').innerHTML = `${periodText}${timeDisplay} | Время: <span id="current-time">--:--:--</span>`;
             updateTime();
+        }
+        
+        // Функция расчета эффективности команды
+        function calculateTeamEfficiency(twoPointers, threePointers, freeThrows, rebounds, turnovers, fouls, period) {
+            // Извлекаем процент попадания штрафных бросков
+            const freeThrowMatch = freeThrows.match(/(\d+)\/(\d+)/);
+            let freeThrowPercentage = 0.7;
+            
+            if (freeThrowMatch) {
+                const made = parseInt(freeThrowMatch[1]) || 0;
+                const attempts = parseInt(freeThrowMatch[2]) || 0;
+                freeThrowPercentage = attempts > 0 ? made / attempts : 0.7;
+            }
+            
+            // Рассчитываем эффективность на основе различных факторов
+            const points = twoPointers * 2 + threePointers * 3;
+            const shootingEfficiency = (twoPointers + threePointers) > 0 ? points / (twoPointers + threePointers) / 2 : 0.8;
+            const reboundEfficiency = rebounds / 40;
+            const turnoverEfficiency = 1 - (turnovers / 20);
+            const foulImpact = 1 - (fouls / 30 * 0.1); // Влияние фолов на эффективность
+            
+            // Корректировка на основе периода игры (усталость)
+            let fatigueFactor = 1.0;
+            if (period === 'late') {
+                fatigueFactor = 0.95; // Снижение эффективности в концовке
+            } else if (period === 'ot') {
+                fatigueFactor = 0.9; // Большее снижение в овертайме
+            }
+            
+            // Рассчитываем эффективность атаки и защиты отдельно
+            const offense = 0.8 + (shootingEfficiency * 0.4 + freeThrowPercentage * 0.3 + reboundEfficiency * 0.2) * foulImpact * fatigueFactor;
+            const defense = 0.7 + (turnoverEfficiency * 0.5 + reboundEfficiency * 0.4) * fatigueFactor;
+            
+            return {
+                offense,
+                defense,
+                overall: (offense + defense) / 2
+            };
+        }
+        
+        // Функция расчета коэффициента времени с учетом формата чемпионата
+        function calculateTimeFactor(period, remainingSeconds, champ) {
+            // Базовый коэффициент в зависимости от периода
+            let baseFactor;
+            const periodNum = period === 'ot' ? champ.periods + 1 : parseInt(period);
+            const isCyber = champ.periodLength === 5;
+
+            if (periodNum <= champ.periods) {
+                // Основные периоды
+                if (champ.periods === 2) {
+                    // Для формата с двумя таймами
+                    baseFactor = periodNum === 1 ? 1.1 : 0.9;
+                } else {
+                    // Для формата с четырьмя периодами
+                    switch(periodNum) {
+                        case 1: baseFactor = isCyber ? 1.0 : 1.1; break;
+                        case 2: baseFactor = 1.0; break;
+                        case 3: baseFactor = isCyber ? 1.0 : 0.95; break;
+                        case 4: baseFactor = isCyber ? 0.95 : 0.9; break;
+                        default: baseFactor = 1.0;
+                    }
+                }
+            } else {
+                // Овертайм
+                baseFactor = 1.0;
+            }
+
+            // Корректировка на основе оставшегося времени
+            const periodLength = periodNum <= champ.periods ? champ.periodLength : champ.otLength;
+            const timeImpact = isCyber ? 0.1 : 0.2;
+            const timeFactor = 1 - (remainingSeconds / (periodLength * 60)) * timeImpact;
+
+            return baseFactor * timeFactor;
+        }
+        
+        // Функция расчета коэффициента пола и психологических факторов
+        function calculateGenderFactor(gender, period, remainingSeconds) {
+            const periodNum = parseInt(period);
+            let paceFactor = 1.0;
+            let performanceFactor = 1.0;
+            let note = "";
+            
+            if (gender === 'men') {
+                // Мужчины: более агрессивны в концовке, выше темп, но больше ошибок под давлением
+                paceFactor = 1.1;
+                if (periodNum >= 4 || period === 'ot') {
+                    performanceFactor = 1.05; // Мужчины лучше проявляют себя в напряженных моментах
+                    note = "Мужчины: выше агрессия в концовке, больше риска";
+                } else {
+                    performanceFactor = 1.0;
+                    note = "Мужчины: стабильная игра, высокий темп";
+                }
+            } else {
+                // Женщины: более стабильны, меньше ошибок под давлением, но ниже темп
+                paceFactor = 0.95;
+                if (periodNum >= 4 || period === 'ot') {
+                    performanceFactor = 0.98; // Женщины более стабильны под давлением
+                    note = "Женщины: выше стабильность в концовке, меньше ошибок";
+                } else {
+                    performanceFactor = 1.0;
+                    note = "Женщины: стабильная игра, точные броски";
+                }
+            }
+            
+            // Учет оставшегося времени
+            const remainingTimeImpact = (remainingSeconds / 60) / 10; // Влияние оставшегося времени
+            if (remainingSeconds < 120) { // Менее 2 минут
+                if (gender === 'men') {
+                    performanceFactor *= 1.05; // Мужчины лучше в последние минуты
+                } else {
+                    performanceFactor *= 1.02; // Женщины стабильны в концовке
+                }
+            }
+            
+            return {
+                pace: paceFactor,
+                performance: performanceFactor,
+                note: note
+            };
+        }
+        
+        // Функция расчета вероятности победы с учетом формата чемпионата и пола
+        function calculateWinProbability(scoreA, scoreB, efficiencyA, efficiencyB, elapsedMinutes, currentPeriod, timeFactor, champ, genderFactor) {
+            const scoreDiff = scoreA - scoreB;
+            const efficiencyDiff = efficiencyA - efficiencyB;
+            const isCyber = champ.periodLength === 5;
+            
+            // Базовая вероятность на основе текущего счета
+            const scoreWeight = isCyber ? 0.7 : 0.5;
+            let baseProbability = 50 + (scoreDiff * scoreWeight);
+            
+            // Корректировка на основе эффективности
+            baseProbability += efficiencyDiff * 10;
+            
+            // Корректировка на основе оставшегося времени
+            let timeCorrection;
+            const periodNum = currentPeriod === 'ot' ? champ.periods + 1 : parseInt(currentPeriod);
+            const isOvertime = periodNum > champ.periods;
+            
+            if (!isOvertime) {
+                const remainingTime = (champ.periodLength * champ.periods) - elapsedMinutes;
+                timeCorrection = remainingTime / (champ.periodLength * champ.periods);
+            } else {
+                const overtimeNum = periodNum - champ.periods;
+                const remainingTime = (champ.otLength * overtimeNum) - (elapsedMinutes - (champ.periodLength * champ.periods));
+                timeCorrection = remainingTime / (champ.otLength * overtimeNum);
+            }
+            
+            baseProbability = 50 + (baseProbability - 50) * timeCorrection;
+            
+            // Корректировка на основе темпа игры
+            baseProbability *= timeFactor;
+            
+            // Корректировка на основе пола
+            baseProbability *= genderFactor.performance;
+            
+            // Ограничиваем вероятность в диапазоне 1-99%
+            return Math.max(1, Math.min(99, baseProbability));
+        }
+        
+        // Функция расчета вероятности тотала
+        function calculateTotalProbability(totalProjected, totalLine, isOver) {
+            const diff = Math.abs(totalProjected - totalLine);
+            let probability;
+            
+            if (diff <= 5) {
+                probability = 50;
+            } else if (diff <= 10) {
+                probability = isOver ? (totalProjected > totalLine ? 65 : 35) : (totalProjected > totalLine ? 35 : 65);
+            } else {
+                probability = isOver ? (totalProjected > totalLine ? 75 : 25) : (totalProjected > totalLine ? 25 : 75);
+            }
+            
+            return probability;
+        }
+        
+        // Функция для расчета вероятности тотала больше
+        function calculateTotalOverProbability(predictedTotal, lineTotal) {
+            // Чем ближе predictedTotal к lineTotal, тем ближе вероятность к 50%
+            const diff = Math.abs(predictedTotal - lineTotal);
+            let probability;
+            
+            if (diff <= 2) {
+                probability = 0.5;
+            } else if (predictedTotal > lineTotal) {
+                probability = 0.5 + (diff / predictedTotal) * 0.3;
+            } else {
+                probability = 0.5 - (diff / predictedTotal) * 0.3;
+            }
+            
+            // Ограничиваем вероятность в диапазоне 0.3-0.7
+            return Math.max(0.3, Math.min(0.7, probability));
+        }
+        
+        // Функция для прогнозирования следующей четверть
+        function predictNextQuarter(efficiencyA, efficiencyB, gamePace, currentPeriod, champ) {
+            // Базовый прогноз на основе эффективности
+            const basePoints = gamePace * champ.periodLength;
+            
+            // Корректировка на основе текущего периода
+            let periodFactor = 1.0;
+            if (currentPeriod === '3') {
+                periodFactor = 1.05;
+            } else if (currentPeriod === '4') {
+                periodFactor = 0.95;
+            }
+            
+            // Прогнозируем очки для каждой команды с учетом эффективности
+            const teamAPoints = Math.round(basePoints * efficiencyA.offense * periodFactor / 2);
+            const teamBPoints = Math.round(basePoints * efficiencyB.offense * periodFactor / 2);
+            
+            // Применяем фактор защиты
+            const adjustedTeamAPoints = Math.round(teamAPoints * (2 - efficiencyB.defense));
+            const adjustedTeamBPoints = Math.round(teamBPoints * (2 - efficiencyA.defense));
+            
+            const totalPoints = adjustedTeamAPoints + adjustedTeamBPoints;
+            const advantage = adjustedTeamAPoints - adjustedTeamBPoints;
+            
+            return {
+                teamAPoints: adjustedTeamAPoints,
+                teamBPoints: adjustedTeamBPoints,
+                totalPoints,
+                advantage
+            };
+        }
+        
+        // Функция для расчета темпа игры
+        function calculateGamePace(totalPoints, currentPeriod, timeRemaining, champ) {
+            const periodNum = parseInt(currentPeriod);
+            const timeParts = timeRemaining.split(':');
+            const remainingMinutes = parseInt(timeParts[0]) || 0;
+            const remainingSeconds = parseInt(timeParts[1]) || 0;
+            const totalRemainingSeconds = remainingMinutes * 60 + remainingSeconds;
+            
+            const elapsedMinutes = (champ.periodLength * (periodNum - 1)) + (champ.periodLength - (totalRemainingSeconds / 60));
+            
+            return totalPoints > 0 ? (totalPoints / elapsedMinutes) : 1.0;
+        }
+        
+        // Функция для расчета вероятности овертайма
+        function calculateOvertimeProbability(scoreA, scoreB, currentPeriod, champ, efficiencyA, efficiencyB) {
+            if (currentPeriod !== '4') return 0;
+            
+            const diff = Math.abs(scoreA - scoreB);
+            const totalPoints = scoreA + scoreB;
+            const avgPoints = totalPoints / 4; // Среднее за четверть
+            
+            // Чем меньше разница, тем выше вероятность овертайма
+            let baseProbability = Math.max(0, 30 - (diff * 3));
+            
+            // Корректировка на основе эффективности команд
+            const efficiencyDiff = Math.abs(efficiencyA.overall - efficiencyB.overall);
+            baseProbability *= (1 - efficiencyDiff * 0.5);
+            
+            return Math.max(0, Math.min(50, baseProbability));
+        }
+        
+        // Функция для генерации рекомендации по ставке на четверть
+        function generateQuarterBetRecommendation(prediction, overtimeProb) {
+            const advantageDiff = Math.abs(prediction.advantage);
+            let text, stake;
+            
+            if (advantageDiff > 7) {
+                text = prediction.advantage > 0 ? 
+                    `Победа ${document.getElementById('team-a').textContent} с форой -${advantageDiff}` : 
+                    `Победа ${document.getElementById('team-b').textContent} с форой +${advantageDiff}`;
+                stake = "Высокая (5-7%)";
+            } else if (advantageDiff > 3) {
+                text = prediction.advantage > 0 ? 
+                    `Победа ${document.getElementById('team-a').textContent} с форой -${advantageDiff}` : 
+                    `Победа ${document.getElementById('team-b').textContent} с форой +${advantageDiff}`;
+                stake = "Средняя (3-5%)";
+            } else {
+                text = "Тотал: " + (prediction.totalPoints > 50 ? "Больше" : "Меньше");
+                stake = "Низкая (1-3%)";
+            }
+            
+            // Учитываем вероятность овертайма
+            if (overtimeProb > 30) {
+                text += " (Внимание: высокая вероятность овертайма)";
+            }
+            
+            return { text, stake };
+        }
+        
+        // Функция для расчета фактора тренера
+        function calculateCoachingFactor(currentPeriod, foulsA, foulsB) {
+            if (currentPeriod !== '4') return "Стандартный";
+            
+            // Если у одной команды много фолов относительно другой
+            const foulDiff = Math.abs(foulsA - foulsB);
+            if (foulDiff > 8) return "Агрессивный";
+            if (foulDiff > 5) return "Умеренный";
+            
+            return "Стандартный";
+        }
+        
+        // Функция для обновления индикатора усталости
+        function updateFatigueIndicator(foulsA, foulsB, currentPeriod) {
+            const periodNum = parseInt(currentPeriod);
+            const totalFouls = foulsA + foulsB;
+            
+            // Усталость увеличивается с каждой четвертью
+            let fatigueLevel = (periodNum / 4) * 100;
+            
+            // Корректировка на основе фолов
+            fatigueLevel += (totalFouls / 40) * 20;
+            
+            // Ограничиваем значение
+            fatigueLevel = Math.min(100, Math.max(0, fatigueLevel));
+            
+            const fatigueElement = document.getElementById('fatigue-indicator');
+            fatigueElement.style.width = `${fatigueLevel}%`;
+            
+            // Изменяем цвет в зависимости от уровня усталости
+            if (fatigueLevel < 40) {
+                fatigueElement.className = 'fatigue-fill low-fatigue';
+            } else if (fatigueLevel < 70) {
+                fatigueElement.className = 'fatigue-fill medium-fatigue';
+            } else {
+                fatigueElement.className = 'fatigue-fill high-fatigue';
+            }
+        }
+        
+        // Функция для обновления график эффективности
+        function updatePerformanceChart() {
+            // Генерируем случайные данные для демонстрации
+            const chart = document.getElementById('performance-chart');
+            chart.innerHTML = '';
+            
+            for (let i = 1; i <= 4; i++) {
+                const randomHeight = Math.floor(Math.random() * 50) + 30;
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar';
+                bar.style.height = `${randomHeight}%`;
+                
+                const label = document.createElement('div');
+                label.className = 'chart-label';
+                label.textContent = `${i}Q`;
+                
+                bar.appendChild(label);
+                chart.appendChild(bar);
+            }
+        }
+        
+        // Функция для запуска симуляции матча
+        function runSimulation() {
+            // Показываем индикатор загрузки
+            const simulateBtn = document.getElementById('simulate-btn');
+            const originalText = simulateBtn.innerHTML;
+            simulateBtn.innerHTML = '<div class="loader"></div> Запуск симуляции...';
+            
+            // Используем setTimeout для имитации процесса симуляции
+            setTimeout(() => {
+                try {
+                    // Получаем текущие данные
+                    const scoreA = parseInt(document.getElementById('score-a').value) || 0;
+                    const scoreB = parseInt(document.getElementById('score-b').value) || 0;
+                    const currentPeriod = document.getElementById('current-period').value;
+                    
+                    // Проводим симуляцию (100 итераций вместо 1000)
+                    let teamAWins = 0;
+                    let teamBWins = 0;
+                    let totalPoints = 0;
+                    let totalDiff = 0;
+                    
+                    for (let i = 0; i < 100; i++) {
+                        // Генерируем случайные результаты на основе текущих данных
+                        const randomFactor = 0.8 + Math.random() * 0.4; // Случайный фактор от 0.8 до 1.2
+                        
+                        // Прогнозируем окончательный счет
+                        const projectedScoreA = scoreA + Math.round((Math.random() * 30 + 20) * randomFactor);
+                        const projectedScoreB = scoreB + Math.round((Math.random() * 30 + 20) * randomFactor);
+                        
+                        // Учитываем эффективность команд
+                        const efficiencyFactorA = 0.9 + (currentTeamAEfficiency.overall - 1);
+                        const efficiencyFactorB = 0.9 + (currentTeamBEfficiency.overall - 1);
+                        
+                        const finalScoreA = Math.round(projectedScoreA * efficiencyFactorA);
+                        const finalScoreB = Math.round(projectedScoreB * efficiencyFactorB);
+                        
+                        // Подсчитываем результаты
+                        if (finalScoreA > finalScoreB) {
+                            teamAWins++;
+                        } else if (finalScoreB > finalScoreA) {
+                            teamBWins++;
+                        }
+                        
+                        totalPoints += finalScoreA + finalScoreB;
+                        totalDiff += finalScoreA - finalScoreB;
+                    }
+                    
+                    // Рассчитываем средние значения
+                    const avgTeamAWins = (teamAWins / 100 * 100).toFixed(1);
+                    const avgTeamBWins = (teamBWins / 100 * 100).toFixed(1);
+                    const avgTotalPoints = (totalPoints / 100).toFixed(1);
+                    const avgDiff = (totalDiff / 100).toFixed(1);
+                    
+                    // Обновляем UI с результатами симуляции
+                    document.getElementById('sim-win-a').textContent = `${avgTeamAWins}%`;
+                    document.getElementById('sim-win-b').textContent = `${avgTeamBWins}%`;
+                    document.getElementById('sim-total').textContent = avgTotalPoints;
+                    document.getElementById('sim-diff').textContent = avgDiff;
+                    
+                    // Показываем блок с результатами
+                    document.getElementById('simulation-results').classList.add('active');
+                    
+                    // Восстанавливаем текст кнопки
+                    simulateBtn.innerHTML = originalText;
+                } catch (error) {
+                    console.error("Ошибка симуляции:", error);
+                    simulateBtn.innerHTML = "Ошибка, попробуйте снова";
+                    setTimeout(() => {
+                        simulateBtn.innerHTML = originalText;
+                    }, 2000);
+                }
+            }, 800); // Уменьшили время симуляции
+        }
+        
+        // Функция для показа деталей анализа
+        function showAnalysisDetails() {
+            // Показываем индикатор загрузки
+            const detailsBtn = document.getElementById('details-btn');
+            const originalText = detailsBtn.innerHTML;
+            detailsBtn.innerHTML = '<div class="loader"></div> Анализ...';
+            
+            // Используем setTimeout для имитации процесса анализа
+            setTimeout(() => {
+                try {
+                    // Обновляем данные в блоке анализа
+                    document.getElementById('analysis-moon').textContent = getMoonPhaseName(currentMoonPhase);
+                    document.getElementById('analysis-moon-impact').textContent = currentMoonInfluence.note;
+                    document.getElementById('analysis-eff-a').textContent = (currentTeamAEfficiency.overall * 100).toFixed(1) + '%';
+                    document.getElementById('analysis-eff-b').textContent = (currentTeamBEfficiency.overall * 100).toFixed(1) + '%';
+                    document.getElementById('analysis-time-factor').textContent = currentTimeFactor.toFixed(2);
+                    document.getElementById('analysis-gender-factor').textContent = currentGenderFactor.note;
+                    document.getElementById('analysis-pace').textContent = currentGamePace + ' очков/мин';
+                    
+                    // Рассчитываем коэффициент усталости
+                    const teamAFouls = parseInt(document.getElementById('team-a-fouls').textContent) || 0;
+                    const teamBFouls = parseInt(document.getElementById('team-b-fouls').textContent) || 0;
+                    const currentPeriod = document.getElementById('current-period').value;
+                    const periodNum = parseInt(currentPeriod);
+                    const totalFouls = teamAFouls + teamBFouls;
+                    let fatigueLevel = (periodNum / 4) * 100;
+                    fatigueLevel += (totalFouls / 40) * 20;
+                    fatigueLevel = Math.min(100, Math.max(0, fatigueLevel));
+                    
+                    document.getElementById('analysis-fatigue').textContent = fatigueLevel.toFixed(0) + '%';
+                    
+                    // Показываем блок с деталями анализа
+                    document.getElementById('analysis-details').classList.add('active');
+                    
+                    // Восстанавливаем текст кнопки
+                    detailsBtn.innerHTML = originalText;
+                } catch (error) {
+                    console.error("Ошибка анализа:", error);
+                    detailsBtn.innerHTML = "Ошибка, попробуйте снова";
+                    setTimeout(() => {
+                        detailsBtn.innerHTML = originalText;
+                    }, 2000);
+                }
+            }, 500);
         }
         
         // Функция расчета прогнозов с учетом пола и психологических факторов
@@ -2679,556 +3142,34 @@
             
             // Рассчитываем прогноз на следующую четверть
             calculateNextQuarterPrediction();
-        }
-        
-        // Функция расчета коэффициента времени с учетом формата чемпионата
-        function calculateTimeFactor(period, remainingSeconds, champ) {
-            // Базовый коэффициент в зависимости от периода
-            let baseFactor;
-            const periodNum = period === 'ot' ? champ.periods + 1 : parseInt(period);
-            const isCyber = champ.periodLength === 5;
-
-            if (periodNum <= champ.periods) {
-                // Основные периоды
-                if (champ.periods === 2) {
-                    // Для формата с двумя таймами
-                    baseFactor = periodNum === 1 ? 1.1 : 0.9;
-                } else {
-                    // Для формата с четырьмя периодами
-                    switch(periodNum) {
-                        case 1: baseFactor = isCyber ? 1.0 : 1.1; break;
-                        case 2: baseFactor = 1.0; break;
-                        case 3: baseFactor = isCyber ? 1.0 : 0.95; break;
-                        case 4: baseFactor = isCyber ? 0.95 : 0.9; break;
-                        default: baseFactor = 1.0;
-                    }
-                }
-            } else {
-                // Овертайм
-                baseFactor = 1.0;
-            }
-
-            // Корректировка на основе оставшегося времени
-            const periodLength = periodNum <= champ.periods ? champ.periodLength : champ.otLength;
-            const timeImpact = isCyber ? 0.1 : 0.2;
-            const timeFactor = 1 - (remainingSeconds / (periodLength * 60)) * timeImpact;
-
-            return baseFactor * timeFactor;
-        }
-        
-        // Функция расчета коэффициента пола и психологических факторов
-        function calculateGenderFactor(gender, period, remainingSeconds) {
-            const periodNum = parseInt(period);
-            let paceFactor = 1.0;
-            let performanceFactor = 1.0;
-            let note = "";
             
-            if (gender === 'men') {
-                // Мужчины: более агрессивны в концовке, выше темп, но больше ошибок под давлением
-                paceFactor = 1.1;
-                if (periodNum >= 4 || period === 'ot') {
-                    performanceFactor = 1.05; // Мужчины лучше проявляют себя в напряженных моментах
-                    note = "Мужчины: выше агрессия в концовке, больше риска";
-                } else {
-                    performanceFactor = 1.0;
-                    note = "Мужчины: стабильная игра, высокий темп";
-                }
-            } else {
-                // Женщины: более стабильны, меньше ошибок под давлением, но ниже темп
-                paceFactor = 0.95;
-                if (periodNum >= 4 || period === 'ot') {
-                    performanceFactor = 0.98; // Женщины более стабильны под давлением
-                    note = "Женщины: выше стабильность в концовке, меньше ошибок";
-                } else {
-                    performanceFactor = 1.0;
-                    note = "Женщины: стабильная игра, точные броски";
-                }
-            }
+            // РАСЧЕТ КОЭФФИЦИЕНТОВ ДЛЯ ВКЛАДКИ "ОСНОВНЫЕ"
+            // Расчет коэффициентов П1 и П2 с маржой 5%
+            const margin = 1.05;
+            const calculatedOddsP1 = (1 / (winProbabilityA / 100) * margin).toFixed(2);
+            const calculatedOddsP2 = (1 / (winProbabilityB / 100) * margin).toFixed(2);
             
-            // Учет оставшегося времени
-            const remainingTimeImpact = (remainingSeconds / 60) / 10; // Влияние оставшегося времени
-            if (remainingSeconds < 120) { // Менее 2 минут
-                if (gender === 'men') {
-                    performanceFactor *= 1.05; // Мужчины лучше в последние минуты
-                } else {
-                    performanceFactor *= 1.02; // Женщины стабильны в концовке
-                }
-            }
+            // Обновляем коэффициенты П1 и П2
+            document.getElementById('odds-p1').textContent = calculatedOddsP1;
+            document.getElementById('odds-p2').textContent = calculatedOddsP2;
             
-            return {
-                pace: paceFactor,
-                performance: performanceFactor,
-                note: note
-            };
-        }
-        
-        // Функция расчета эффективности команды
-        function calculateEfficiency(twoPointers, threePointers, freeThrows, rebounds, turnovers) {
-            // Извлекаем процент попадания штрафных бросков
-            const freeThrowMatch = freeThrows.match(/(\d+)\/(\d+)/);
-            let freeThrowPercentage = 0.7;
+            // Расчет тотала для следующей четверти
+            const nextQuarterTotal = predictNextQuarter(teamAEff, teamBEff, parseFloat(gamePace), currentPeriod, champ).totalPoints;
             
-            if (freeThrowMatch) {
-                const made = parseInt(freeThrowMatch[1]);
-                const attempts = parseInt(freeThrowMatch[2]);
-                freeThrowPercentage = attempts > 0 ? made / attempts : 0.7;
-            }
+            // Устанавливаем тотал для четверти (округленный до ближайшего 0.5)
+            const roundedTotal = (Math.round(nextQuarterTotal * 2) / 2).toFixed(1);
             
-            // Рассчитываем эффективность на основе различных факторов
-            const points = twoPointers * 2 + threePointers * 3;
-            const shootingEfficiency = (twoPointers + threePointers) > 0 ? points / (twoPointers + threePointers) / 2 : 0.8;
-            const reboundEfficiency = rebounds / 40;
-            const turnoverEfficiency = 1 - (turnovers / 20);
+            // Рассчитываем коэффициенты для тотала на четверть
+            const totalOverProb = calculateTotalOverProbability(nextQuarterTotal, roundedTotal);
+            const totalUnderProb = 1 - totalOverProb;
             
-            return 0.8 + (shootingEfficiency * 0.5 + freeThrowPercentage * 0.3 + reboundEfficiency * 0.1 + turnoverEfficiency * 0.1);
-        }
-        
-        // Функция расчета вероятности победы с учетом формата чемпионата и пола
-        function calculateWinProbability(scoreA, scoreB, efficiencyA, efficiencyB, elapsedMinutes, currentPeriod, timeFactor, champ, genderFactor) {
-            const scoreDiff = scoreA - scoreB;
-            const efficiencyDiff = efficiencyA - efficiencyB;
-            const isCyber = champ.periodLength === 5;
+            // Добавляем маржу
+            const oddsTotalOverQuarter = (1 / totalOverProb * margin).toFixed(2);
+            const oddsTotalUnderQuarter = (1 / totalUnderProb * margin).toFixed(2);
             
-            // Базовая вероятность на основе текущего счета
-            const scoreWeight = isCyber ? 0.7 : 0.5;
-            let baseProbability = 50 + (scoreDiff * scoreWeight);
-            
-            // Корректировка на основе эффективности
-            baseProbability += efficiencyDiff * 10;
-            
-            // Корректировка на основе оставшегося времени
-            let timeCorrection;
-            const periodNum = currentPeriod === 'ot' ? champ.periods + 1 : parseInt(currentPeriod);
-            const isOvertime = periodNum > champ.periods;
-            
-            if (!isOvertime) {
-                const remainingTime = (champ.periodLength * champ.periods) - elapsedMinutes;
-                timeCorrection = remainingTime / (champ.periodLength * champ.periods);
-            } else {
-                const overtimeNum = periodNum - champ.periods;
-                const remainingTime = (champ.otLength * overtimeNum) - (elapsedMinutes - (champ.periodLength * champ.periods));
-                timeCorrection = remainingTime / (champ.otLength * overtimeNum);
-            }
-            
-            baseProbability = 50 + (baseProbability - 50) * timeCorrection;
-            
-            // Корректировка на основе темпа игры
-            baseProbability *= timeFactor;
-            
-            // Корректировка на основе пола
-            baseProbability *= genderFactor.performance;
-            
-            // Ограничиваем вероятность в диапазоне 1-99%
-            return Math.max(1, Math.min(99, baseProbability));
-        }
-        
-        // Функция расчета вероятности тотала
-        function calculateTotalProbability(totalProjected, totalLine, isOver) {
-            const diff = Math.abs(totalProjected - totalLine);
-            let probability;
-            
-            if (diff <= 5) {
-                probability = 50;
-            } else if (diff <= 10) {
-                probability = isOver ? (totalProjected > totalLine ? 65 : 35) : (totalProjected > totalLine ? 35 : 65);
-            } else {
-                probability = isOver ? (totalProjected > totalLine ? 75 : 25) : (totalProjected > totalLine ? 25 : 75);
-            }
-            
-            return probability;
-        }
-        
-        // НОВЫЕ ФУНКЦИИ ДЛЯ РАСШИРЕННОГО ПРОГНОЗИРОВАНИЯ
-        
-        // Функция для расчета прогноза на следующую четверть
-        function calculateNextQuarterPrediction() {
-            const champ = championships[currentChampionship];
-            const currentPeriod = document.getElementById('current-period').value;
-            
-            // Пропускаем расчет, если матч уже завершен или в овертайме
-            if (currentPeriod === 'ot' || parseInt(currentPeriod) > champ.periods) {
-                document.getElementById('next-quarter-prediction').classList.remove('active');
-                return;
-            }
-            
-            // Показываем блок прогноза
-            document.getElementById('next-quarter-prediction').classList.add('active');
-            
-            // Получаем текущие данные
-            const scoreA = parseInt(document.getElementById('score-a').value) || 0;
-            const scoreB = parseInt(document.getElementById('score-b').value) || 0;
-            const timeRemaining = document.getElementById('time-remaining').value;
-            
-            // Получаем статистику команд
-            const teamAFreeThrows = document.getElementById('team-a-free-throws').textContent;
-            const teamBFreeThrows = document.getElementById('team-b-free-throws').textContent;
-            const teamATwoPointers = parseInt(document.getElementById('team-a-two-pointers').textContent) || 0;
-            const teamBTwoPointers = parseInt(document.getElementById('team-b-two-pointers').textContent) || 0;
-            const teamAThreePointers = parseInt(document.getElementById('team-a-three-pointers').textContent) || 0;
-            const teamBThreePointers = parseInt(document.getElementById('team-b-three-pointers').textContent) || 0;
-            const teamAFouls = parseInt(document.getElementById('team-a-fouls').textContent) || 0;
-            const teamBFouls = parseInt(document.getElementById('team-b-fouls').textContent) || 0;
-            const teamARebounds = parseInt(document.getElementById('team-a-rebounds').textContent) || 0;
-            const teamBRebounds = parseInt(document.getElementById('team-b-rebounds').textContent) || 0;
-            const teamATurnovers = parseInt(document.getElementById('team-a-turnovers').textContent) || 0;
-            const teamBTurnovers = parseInt(document.getElementById('team-b-turnovers').textContent) || 0;
-            
-            // Рассчитываем эффективность команд
-            const teamAEfficiency = calculateTeamEfficiency(teamATwoPointers, teamAThreePointers, teamAFreeThrows, 
-                                                          teamARebounds, teamATurnovers, teamAFouls, 'current');
-            const teamBEfficiency = calculateTeamEfficiency(teamBTwoPointers, teamBThreePointers, teamBFreeThrows, 
-                                                          teamBRebounds, teamBTurnovers, teamBFouls, 'current');
-            
-            // Рассчитываем темп игры
-            const gamePace = calculateGamePace(scoreA + scoreB, currentPeriod, timeRemaining, champ);
-            
-            // Прогнозируем следующую четверть
-            const nextQuarterPrediction = predictNextQuarter(teamAEfficiency, teamBEfficiency, gamePace, currentPeriod, champ);
-            
-            // Обновляем UI с прогнозом
-            document.getElementById('next-quarter-total').textContent = nextQuarterPrediction.totalPoints;
-            document.getElementById('next-quarter-advantage').textContent = nextQuarterPrediction.advantage > 0 ? 
-                `+${nextQuarterPrediction.advantage} для ${document.getElementById('team-a').textContent}` : 
-                `${nextQuarterPrediction.advantage} для ${document.getElementById('team-b').textContent}`;
-            
-            // Обновляем сравнение команд
-            const teamAShare = nextQuarterPrediction.teamAPoints / nextQuarterPrediction.totalPoints * 100;
-            const teamBShare = nextQuarterPrediction.teamBPoints / nextQuarterPrediction.totalPoints * 100;
-            
-            document.getElementById('team-a-fill').style.width = `${teamAShare}%`;
-            document.getElementById('team-b-fill').style.width = `${teamBShare}%`;
-            
-            document.getElementById('next-quarter-pace').textContent = `${gamePace.toFixed(1)} очков/мин`;
-            document.getElementById('next-quarter-offense').textContent = `${(teamAEfficiency.offense * 100).toFixed(0)}% vs ${(teamBEfficiency.offense * 100).toFixed(0)}%`;
-            document.getElementById('next-quarter-defense').textContent = `${(teamAEfficiency.defense * 100).toFixed(0)}% vs ${(teamBEfficiency.defense * 100).toFixed(0)}%`;
-            
-            // Рассчитываем вероятность овертайма
-            const overtimeProb = calculateOvertimeProbability(scoreA, scoreB, currentPeriod, champ, 
-                                                             teamAEfficiency, teamBEfficiency);
-            document.getElementById('overtime-probability').textContent = `${overtimeProb}%`;
-            
-            // Определяем рекомендацию для ставки на четверть
-            const quarterRecommendation = generateQuarterBetRecommendation(nextQuarterPrediction, overtimeProb);
-            document.getElementById('quarter-bet-recommendation').textContent = quarterRecommendation.text;
-            document.getElementById('stake-size-value').textContent = quarterRecommendation.stake;
-            
-            // Обновляем фактор тренера и усталость
-            document.getElementById('coaching-factor-value').textContent = calculateCoachingFactor(currentPeriod, teamAFouls, teamBFouls);
-            updateFatigueIndicator(teamAFouls, teamBFouls, currentPeriod);
-            
-            // Обновляем график эффективности
-            updatePerformanceChart();
-        }
-        
-        // Функция для расчета эффективности команды с учетом усталости и других факторов
-        function calculateTeamEfficiency(twoPointers, threePointers, freeThrows, rebounds, turnovers, fouls, period) {
-            // Базовые расчеты эффективности
-            const freeThrowMatch = freeThrows.match(/(\d+)\/(\d+)/);
-            let freeThrowPercentage = 0.7;
-            
-            if (freeThrowMatch) {
-                const made = parseInt(freeThrowMatch[1]) || 0;
-                const attempts = parseInt(freeThrowMatch[2]) || 0;
-                freeThrowPercentage = attempts > 0 ? made / attempts : 0.7;
-            }
-            
-            // Рассчитываем эффективность на основе различных факторов
-            const points = twoPointers * 2 + threePointers * 3;
-            const shootingEfficiency = (twoPointers + threePointers) > 0 ? points / (twoPointers + threePointers) / 2 : 0.8;
-            const reboundEfficiency = rebounds / 40;
-            const turnoverEfficiency = 1 - (turnovers / 20);
-            const foulImpact = 1 - (fouls / 30 * 0.1); // Влияние фолов на эффективность
-            
-            // Корректировка на основе периода игры (усталость)
-            let fatigueFactor = 1.0;
-            if (period === 'late') {
-                fatigueFactor = 0.95; // Снижение эффективности в концовке
-            } else if (period === 'ot') {
-                fatigueFactor = 0.9; // Большее снижение в овертайме
-            }
-            
-            // Рассчитываем эффективность атаки и защиты отдельно
-            const offense = 0.8 + (shootingEfficiency * 0.4 + freeThrowPercentage * 0.3 + reboundEfficiency * 0.2) * foulImpact * fatigueFactor;
-            const defense = 0.7 + (turnoverEfficiency * 0.5 + reboundEfficiency * 0.4) * fatigueFactor;
-            
-            return {
-                offense,
-                defense,
-                overall: (offense + defense) / 2
-            };
-        }
-        
-        // Функция для расчета темпа игры
-        function calculateGamePace(totalPoints, currentPeriod, timeRemaining, champ) {
-            const periodNum = parseInt(currentPeriod);
-            const timeParts = timeRemaining.split(':');
-            const remainingMinutes = parseInt(timeParts[0]) || 0;
-            const remainingSeconds = parseInt(timeParts[1]) || 0;
-            const totalRemainingSeconds = remainingMinutes * 60 + remainingSeconds;
-            
-            const elapsedMinutes = (champ.periodLength * (periodNum - 1)) + (champ.periodLength - (totalRemainingSeconds / 60));
-            
-            return totalPoints > 0 ? (totalPoints / elapsedMinutes) : 1.0;
-        }
-        
-        // Функция для прогнозирования следующей четверть
-        function predictNextQuarter(efficiencyA, efficiencyB, gamePace, currentPeriod, champ) {
-            // Базовый прогноз на основе эффективности
-            const basePoints = gamePace * champ.periodLength;
-            
-            // Корректировка на основе текущего периода
-            let periodFactor = 1.0;
-            if (currentPeriod === '3') {
-                // Третья четверть часто бывает решающей
-                periodFactor = 1.05;
-            } else if (currentPeriod === '4') {
-                // Четвертая четверть - больше напряжения, меньше эффективности
-                periodFactor = 0.95;
-            }
-            
-            // Прогнозируем очки для каждой команды
-            const teamAPoints = Math.round(basePoints * efficiencyA.offense * periodFactor / 2);
-            const teamBPoints = Math.round(basePoints * efficiencyB.offense * periodFactor / 2);
-            
-            // Применяем фактор защиты
-            const adjustedTeamAPoints = Math.round(teamAPoints * (2 - efficiencyB.defense));
-            const adjustedTeamBPoints = Math.round(teamBPoints * (2 - efficiencyA.defense));
-            
-            const totalPoints = adjustedTeamAPoints + adjustedTeamBPoints;
-            const advantage = adjustedTeamAPoints - adjustedTeamBPoints;
-            
-            return {
-                teamAPoints: adjustedTeamAPoints,
-                teamBPoints: adjustedTeamBPoints,
-                totalPoints,
-                advantage
-            };
-        }
-        
-        // Функция для расчета вероятности овертайма
-        function calculateOvertimeProbability(scoreA, scoreB, currentPeriod, champ, efficiencyA, efficiencyB) {
-            if (currentPeriod !== '4') return 0;
-            
-            const diff = Math.abs(scoreA - scoreB);
-            const totalPoints = scoreA + scoreB;
-            const avgPoints = totalPoints / 4; // Среднее за четверть
-            
-            // Чем меньше разница, тем выше вероятность овертайма
-            let baseProbability = Math.max(0, 30 - (diff * 3));
-            
-            // Корректировка на основе эффективности команд
-            const efficiencyDiff = Math.abs(efficiencyA.overall - efficiencyB.overall);
-            baseProbability *= (1 - efficiencyDiff * 0.5);
-            
-            return Math.max(0, Math.min(50, baseProbability));
-        }
-        
-        // Функция для генерации рекомендации по ставке на четверть
-        function generateQuarterBetRecommendation(prediction, overtimeProb) {
-            const advantageDiff = Math.abs(prediction.advantage);
-            let text, stake;
-            
-            if (advantageDiff > 7) {
-                text = prediction.advantage > 0 ? 
-                    `Победа ${document.getElementById('team-a').textContent} с форой -${advantageDiff}` : 
-                    `Победа ${document.getElementById('team-b').textContent} с форой +${advantageDiff}`;
-                stake = "Высокая (5-7%)";
-            } else if (advantageDiff > 3) {
-                text = prediction.advantage > 0 ? 
-                    `Победа ${document.getElementById('team-a').textContent} с форой -${advantageDiff}` : 
-                    `Победа ${document.getElementById('team-b').textContent} с форой +${advantageDiff}`;
-                stake = "Средняя (3-5%)";
-            } else {
-                text = "Тотал: " + (prediction.totalPoints > 50 ? "Больше" : "Меньше");
-                stake = "Низкая (1-3%)";
-            }
-            
-            // Учитываем вероятность овертайма
-            if (overtimeProb > 30) {
-                text += " (Внимание: высокая вероятность овертайма)";
-            }
-            
-            return { text, stake };
-        }
-        
-        // Функция для расчета фактора тренера
-        function calculateCoachingFactor(currentPeriod, foulsA, foulsB) {
-            if (currentPeriod !== '4') return "Стандартный";
-            
-            // Если у одной команды много фолов относительно другой
-            const foulDiff = Math.abs(foulsA - foulsB);
-            if (foulDiff > 8) return "Агрессивный";
-            if (foulDiff > 5) return "Умеренный";
-            
-            return "Стандартный";
-        }
-        
-        // Функция для обновления индикатора усталости
-        function updateFatigueIndicator(foulsA, foulsB, currentPeriod) {
-            const periodNum = parseInt(currentPeriod);
-            const totalFouls = foulsA + foulsB;
-            
-            // Усталость увеличивается с каждой четвертью
-            let fatigueLevel = (periodNum / 4) * 100;
-            
-            // Корректировка на основе фолов
-            fatigueLevel += (totalFouls / 40) * 20;
-            
-            // Ограничиваем значение
-            fatigueLevel = Math.min(100, Math.max(0, fatigueLevel));
-            
-            const fatigueElement = document.getElementById('fatigue-indicator');
-            fatigueElement.style.width = `${fatigueLevel}%`;
-            
-            // Изменяем цвет в зависимости от уровня усталости
-            if (fatigueLevel < 40) {
-                fatigueElement.className = 'fatigue-fill low-fatigue';
-            } else if (fatigueLevel < 70) {
-                fatigueElement.className = 'fatigue-fill medium-fatigue';
-            } else {
-                fatigueElement.className = 'fatigue-fill high-fatigue';
-            }
-        }
-        
-        // Функция для обновления график эффективности
-        function updatePerformanceChart() {
-            // Генерируем случайные данные для демонстрации
-            const chart = document.getElementById('performance-chart');
-            chart.innerHTML = '';
-            
-            for (let i = 1; i <= 4; i++) {
-                const randomHeight = Math.floor(Math.random() * 50) + 30;
-                const bar = document.createElement('div');
-                bar.className = 'chart-bar';
-                bar.style.height = `${randomHeight}%`;
-                
-                const label = document.createElement('div');
-                label.className = 'chart-label';
-                label.textContent = `${i}Q`;
-                
-                bar.appendChild(label);
-                chart.appendChild(bar);
-            }
-        }
-        
-        // Функция для запуска симуляции матча
-        function runSimulation() {
-            // Показываем индикатор загрузки
-            const simulateBtn = document.getElementById('simulate-btn');
-            const originalText = simulateBtn.innerHTML;
-            simulateBtn.innerHTML = '<div class="loader"></div> Запуск симуляции...';
-            
-            // Используем setTimeout для имитации процесса симуляции
-            setTimeout(() => {
-                try {
-                    // Получаем текущие данные
-                    const scoreA = parseInt(document.getElementById('score-a').value) || 0;
-                    const scoreB = parseInt(document.getElementById('score-b').value) || 0;
-                    const currentPeriod = document.getElementById('current-period').value;
-                    
-                    // Проводим симуляцию (100 итераций вместо 1000)
-                    let teamAWins = 0;
-                    let teamBWins = 0;
-                    let totalPoints = 0;
-                    let totalDiff = 0;
-                    
-                    for (let i = 0; i < 100; i++) {
-                        // Генерируем случайные результаты на основе текущих данных
-                        const randomFactor = 0.8 + Math.random() * 0.4; // Случайный фактор от 0.8 до 1.2
-                        
-                        // Прогнозируем окончательный счет
-                        const projectedScoreA = scoreA + Math.round((Math.random() * 30 + 20) * randomFactor);
-                        const projectedScoreB = scoreB + Math.round((Math.random() * 30 + 20) * randomFactor);
-                        
-                        // Учитываем эффективность команд
-                        const efficiencyFactorA = 0.9 + (currentTeamAEfficiency.overall - 1);
-                        const efficiencyFactorB = 0.9 + (currentTeamBEfficiency.overall - 1);
-                        
-                        const finalScoreA = Math.round(projectedScoreA * efficiencyFactorA);
-                        const finalScoreB = Math.round(projectedScoreB * efficiencyFactorB);
-                        
-                        // Подсчитываем результаты
-                        if (finalScoreA > finalScoreB) {
-                            teamAWins++;
-                        } else if (finalScoreB > finalScoreA) {
-                            teamBWins++;
-                        }
-                        
-                        totalPoints += finalScoreA + finalScoreB;
-                        totalDiff += finalScoreA - finalScoreB;
-                    }
-                    
-                    // Рассчитываем средние значения
-                    const avgTeamAWins = (teamAWins / 100 * 100).toFixed(1);
-                    const avgTeamBWins = (teamBWins / 100 * 100).toFixed(1);
-                    const avgTotalPoints = (totalPoints / 100).toFixed(1);
-                    const avgDiff = (totalDiff / 100).toFixed(1);
-                    
-                    // Обновляем UI с результатами симуляции
-                    document.getElementById('sim-win-a').textContent = `${avgTeamAWins}%`;
-                    document.getElementById('sim-win-b').textContent = `${avgTeamBWins}%`;
-                    document.getElementById('sim-total').textContent = avgTotalPoints;
-                    document.getElementById('sim-diff').textContent = avgDiff;
-                    
-                    // Показываем блок с результатами
-                    document.getElementById('simulation-results').classList.add('active');
-                    
-                    // Восстанавливаем текст кнопки
-                    simulateBtn.innerHTML = originalText;
-                } catch (error) {
-                    console.error("Ошибка симуляции:", error);
-                    simulateBtn.innerHTML = "Ошибка, попробуйте снова";
-                    setTimeout(() => {
-                        simulateBtn.innerHTML = originalText;
-                    }, 2000);
-                }
-            }, 800); // Уменьшили время симуляции
-        }
-        
-        // Функция для показа деталей анализа
-        function showAnalysisDetails() {
-            // Показываем индикатор загрузки
-            const detailsBtn = document.getElementById('details-btn');
-            const originalText = detailsBtn.innerHTML;
-            detailsBtn.innerHTML = '<div class="loader"></div> Анализ...';
-            
-            // Используем setTimeout для имитации процесса анализа
-            setTimeout(() => {
-                try {
-                    // Обновляем данные в блоке анализа
-                    document.getElementById('analysis-moon').textContent = getMoonPhaseName(currentMoonPhase);
-                    document.getElementById('analysis-moon-impact').textContent = currentMoonInfluence.note;
-                    document.getElementById('analysis-eff-a').textContent = (currentTeamAEfficiency.overall * 100).toFixed(1) + '%';
-                    document.getElementById('analysis-eff-b').textContent = (currentTeamBEfficiency.overall * 100).toFixed(1) + '%';
-                    document.getElementById('analysis-time-factor').textContent = currentTimeFactor.toFixed(2);
-                    document.getElementById('analysis-gender-factor').textContent = currentGenderFactor.note;
-                    document.getElementById('analysis-pace').textContent = currentGamePace + ' очков/мин';
-                    
-                    // Рассчитываем коэффициент усталости
-                    const teamAFouls = parseInt(document.getElementById('team-a-fouls').textContent) || 0;
-                    const teamBFouls = parseInt(document.getElementById('team-b-fouls').textContent) || 0;
-                    const currentPeriod = document.getElementById('current-period').value;
-                    const periodNum = parseInt(currentPeriod);
-                    const totalFouls = teamAFouls + teamBFouls;
-                    let fatigueLevel = (periodNum / 4) * 100;
-                    fatigueLevel += (totalFouls / 40) * 20;
-                    fatigueLevel = Math.min(100, Math.max(0, fatigueLevel));
-                    
-                    document.getElementById('analysis-fatigue').textContent = fatigueLevel.toFixed(0) + '%';
-                    
-                    // Показываем блок с деталями анализа
-                    document.getElementById('analysis-details').classList.add('active');
-                    
-                    // Восстанавливаем текст кнопки
-                    detailsBtn.innerHTML = originalText;
-                } catch (error) {
-                    console.error("Ошибка анализа:", error);
-                    detailsBtn.innerHTML = "Ошибка, попробуйте снова";
-                    setTimeout(() => {
-                        detailsBtn.innerHTML = originalText;
-                    }, 2000);
-                }
-            }, 500);
+            // Обновляем коэффициенты тоталов
+            document.getElementById('odds-total-over').textContent = oddsTotalOverQuarter;
+            document.getElementById('odds-total-under').textContent = oddsTotalUnderQuarter;
         }
         
         // Обработчик кнопки симуляции
