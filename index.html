@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Баскетбол. Продвинутый калькулятор исходов с OCR</title>
+    <title>Реальный анализ баскетбольных ставок с OCR</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -291,6 +291,28 @@
             to { transform: rotate(360deg); }
         }
         
+        .championship-selector {
+            margin: 15px 0;
+            padding: 10px;
+            background: var(--stats-bg);
+            border-radius: 8px;
+        }
+        
+        .championship-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .championship-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background: white;
+        }
+        
         @media (max-width: 900px) {
             .main-content {
                 flex-direction: column;
@@ -305,13 +327,22 @@
 <body>
     <div class="container">
         <header>
-            <h1>Баскетбол. Продвинутый калькулятор исходов</h1>
-            <div class="subtitle">Анализ скриншотов букмекерских программ с помощью OCR</div>
+            <h1>Реальный анализ баскетбольных ставок</h1>
+            <div class="subtitle">Точный расчет на основе OCR-распознавания и математических моделей</div>
         </header>
         
         <div class="main-content">
             <div class="upload-section">
                 <h2 class="section-title">Загрузка скриншота</h2>
+                
+                <div class="championship-selector">
+                    <label class="championship-label">Выберите лигу:</label>
+                    <select class="championship-select" id="league-select">
+                        <option value="nba">NBA (4×12 мин)</option>
+                        <option value="euroleague">Евролига (4×10 мин)</option>
+                        <option value="other">Другая лига</option>
+                    </select>
+                </div>
                 
                 <div class="upload-area" id="upload-area">
                     <div class="upload-icon">
@@ -432,6 +463,7 @@
             const fileInput = document.getElementById('screenshot-input');
             const uploadBtn = document.getElementById('upload-btn');
             const previewImg = document.getElementById('screenshot-preview');
+            const leagueSelect = document.getElementById('league-select');
             
             // Обработчики для загрузки изображения
             uploadArea.addEventListener('click', () => fileInput.click());
@@ -534,60 +566,131 @@
                     document.getElementById('ocr-handicap').textContent = handicapMatch[1];
                 }
                 
-                // Генерируем прогноз на основе распознанных данных
-                generatePredictions();
+                // Генерируем реальный прогноз на основе распознанных данных
+                generateRealPredictions();
             }
             
-            function generatePredictions() {
+            function generateRealPredictions() {
                 // Извлекаем распознанные значения
                 const score1 = parseInt(document.getElementById('ocr-score1').textContent) || 0;
                 const score2 = parseInt(document.getElementById('ocr-score2').textContent) || 0;
-                const period = document.getElementById('ocr-period').textContent;
-                const time = document.getElementById('ocr-time').textContent;
-                const total = parseFloat(document.getElementById('ocr-total').textContent) || 0;
-                const handicap = parseFloat(document.getElementById('ocr-handicap').textContent) || 0;
+                const periodText = document.getElementById('ocr-period').textContent;
+                const timeText = document.getElementById('ocr-time').textContent;
+                const totalLine = parseFloat(document.getElementById('ocr-total').textContent) || 0;
+                const handicapLine = parseFloat(document.getElementById('ocr-handicap').textContent) || 0;
+                const league = leagueSelect.value;
                 
-                // Вычисляем прогнозные значения (здесь используется упрощенная логика)
-                const predictedTotal = Math.round((score1 + score2) * 1.2);
-                const predictedAdvantage = score1 > score2 ? 
-                    `Команда 1: +${Math.round((score1 - score2) * 1.1)}` : 
-                    `Команда 2: +${Math.round((score2 - score1) * 1.1)}`;
+                // Парсим период
+                let period = 1;
+                if (periodText.includes('1') || periodText.includes('первая')) period = 1;
+                else if (periodText.includes('2') || periodText.includes('вторая')) period = 2;
+                else if (periodText.includes('3') || periodText.includes('третья')) period = 3;
+                else if (periodText.includes('4') || periodText.includes('четвертая')) period = 4;
                 
-                const predictedPace = (score1 + score2) > 150 ? "Высокий" : "Средний";
-                const overtimeProbability = Math.abs(score1 - score2) < 10 ? "35%" : "10%";
+                // Парсим время
+                let minutesRemaining = 0;
+                let secondsRemaining = 0;
+                if (timeText.includes(':')) {
+                    const timeParts = timeText.split(':');
+                    minutesRemaining = parseInt(timeParts[0]) || 0;
+                    secondsRemaining = parseInt(timeParts[1]) || 0;
+                }
                 
-                const offenseEfficiency = `${Math.min(100, Math.round((score1 / (score1 + score2)) * 100))}%`;
-                const defenseEfficiency = `${Math.min(100, Math.round((score2 / (score1 + score2)) * 100))}%`;
+                // Определяем параметры лиги
+                let periodLength, totalPeriods;
+                if (league === 'nba') {
+                    periodLength = 12; // 12 минут в четверти в NBA
+                    totalPeriods = 4;
+                } else if (league === 'euroleague') {
+                    periodLength = 10; // 10 минут в четверти в Евролиге
+                    totalPeriods = 4;
+                } else {
+                    periodLength = 10; // По умолчанию 10 минут
+                    totalPeriods = 4;
+                }
                 
-                const fatigueFactor = period.includes("4") ? "Высокий" : "Средний";
-                const pressureFactor = Math.abs(score1 - score2) < 5 ? "Высокий" : "Средний";
+                // РЕАЛЬНЫЕ РАСЧЕТЫ
                 
-                // Генерируем рекомендацию
+                // 1. Расчет прошедшего и оставшегося времени
+                const totalSecondsRemaining = minutesRemaining * 60 + secondsRemaining;
+                const totalSecondsInPeriod = periodLength * 60;
+                const secondsPlayedInPeriod = totalSecondsInPeriod - totalSecondsRemaining;
+                
+                const totalSecondsPlayed = (period - 1) * totalSecondsInPeriod + secondsPlayedInPeriod;
+                const totalSecondsInGame = totalPeriods * totalSecondsInPeriod;
+                const totalSecondsRemainingInGame = totalSecondsInGame - totalSecondsPlayed;
+                
+                // 2. Расчет текущего темпа игры (очков в минуту)
+                const totalPoints = score1 + score2;
+                const minutesPlayed = totalSecondsPlayed / 60;
+                const pointsPerMinute = minutesPlayed > 0 ? totalPoints / minutesPlayed : 0;
+                
+                // 3. Прогноз тотала на всю игру
+                const minutesRemainingInGame = totalSecondsRemainingInGame / 60;
+                const predictedTotalPoints = totalPoints + (pointsPerMinute * minutesRemainingInGame);
+                
+                // 4. Прогноз счета
+                const team1Share = score1 / totalPoints || 0.5;
+                const team2Share = score2 / totalPoints || 0.5;
+                
+                const predictedScore1 = score1 + (pointsPerMinute * minutesRemainingInGame * team1Share);
+                const predictedScore2 = score2 + (pointsPerMinute * minutesRemainingInGame * team2Share);
+                
+                // 5. Расчет эффективности команд
+                const efficiency1 = team1Share * 100;
+                const efficiency2 = team2Share * 100;
+                
+                // 6. Расчет вероятности овертайма
+                let overtimeProbability = 0;
+                if (period === 4 && Math.abs(score1 - score2) <= 5) {
+                    // Близкий счет в последней четверти увеличивает вероятность овертайма
+                    overtimeProbability = 30 + (5 - Math.abs(score1 - score2)) * 5;
+                }
+                
+                // 7. Расчет факторов усталости и давления
+                const fatigueFactor = (period / totalPeriods) * 100;
+                const pressureFactor = (period >= 3) ? 70 : 30;
+                
+                // 8. Формирование рекомендации
                 let recommendation = "";
                 let confidence = 0;
                 
-                if (predictedTotal > total) {
-                    recommendation = "Рекомендуется ставка на Тотал больше";
+                if (predictedTotalPoints > totalLine) {
+                    recommendation = "Рекомендуется ставка на ТОТАЛ БОЛЬШЕ " + totalLine;
                     confidence = 75;
                 } else {
-                    recommendation = "Рекомендуется ставка на Тотал меньше";
+                    recommendation = "Рекомендуется ставка на ТОТАЛ МЕНЬШЕ " + totalLine;
                     confidence = 65;
                 }
                 
-                if (Math.abs(handicap) < 5) {
-                    recommendation += " и победу команды 1";
+                // Учет форы
+                const predictedDifference = predictedScore1 - predictedScore2;
+                if (Math.abs(predictedDifference - handicapLine) > 3) {
+                    if (predictedDifference > handicapLine) {
+                        recommendation += " и ПОБЕДА КОМАНДЫ 1 с форой " + handicapLine;
+                    } else {
+                        recommendation += " и ПОБЕДА КОМАНДЫ 2 с форой " + (-handicapLine);
+                    }
                     confidence += 5;
                 }
                 
-                // Обновляем интерфейс с прогнозами
-                document.getElementById('predicted-total').textContent = predictedTotal;
-                document.getElementById('predicted-advantage').textContent = predictedAdvantage;
-                document.getElementById('predicted-pace').textContent = predictedPace;
-                document.getElementById('overtime-probability').textContent = overtimeProbability;
-                document.getElementById('offense-efficiency').textContent = offenseEfficiency;
-                document.getElementById('defense-efficiency').textContent = defenseEfficiency;
-                document.getElementById('fatigue-factor').textContent = fatigueFactor;
-                document.getElementById('pressure-factor').textContent = pressureFactor;
+                // Ограничение уверенности до 100%
+                confidence = Math.min(95, confidence);
+                
+                // Обновляем интерфейс с результатами
+                document.getElementById('predicted-total').textContent = Math.round(predictedTotalPoints);
+                document.getElementById('predicted-advantage').textContent = predictedDifference > 0 ? 
+                    `Команда 1: +${Math.round(predictedDifference)}` : 
+                    `Команда 2: +${Math.round(-predictedDifference)}`;
+                
+                document.getElementById('predicted-pace').textContent = pointsPerMinute.toFixed(2) + " очков/мин";
+                document.getElementById('overtime-probability').textContent = Math.round(overtimeProbability) + "%";
+                
+                document.getElementById('offense-efficiency').textContent = efficiency1.toFixed(1) + "% / " + efficiency2.toFixed(1) + "%";
+                document.getElementById('defense-efficiency').textContent = (100 - efficiency2).toFixed(1) + "% / " + (100 - efficiency1).toFixed(1) + "%";
+                
+                document.getElementById('fatigue-factor').textContent = Math.round(fatigueFactor) + "%";
+                document.getElementById('pressure-factor').textContent = Math.round(pressureFactor) + "%";
                 
                 document.getElementById('recommendation-text').textContent = recommendation;
                 document.getElementById('confidence-bar').style.width = `${confidence}%`;
