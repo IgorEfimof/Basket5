@@ -8,7 +8,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Стили остаются без изменений */
         * {
             margin: 0;
             padding: 0;
@@ -513,6 +512,20 @@
                 font-size: 16px !important;
             }
         }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -556,7 +569,7 @@
                     <h3>Или введите данные вручную:</h3>
                     <div class="input-group">
                         <label class="input-label">Текущий счет (Команда 1 : Команда 2)</label>
-                        <input type="text" class="input-field" id="manual-score" placeholder="Например: 31:28" readonly>
+                        <input type="text" class="input-field" id="manual-score" placeholder="Например: 100:92" readonly>
                     </div>
                     <div class="input-group">
                         <label class="input-label">Текущая четверть</label>
@@ -564,15 +577,15 @@
                     </div>
                     <div class="input-group">
                         <label class="input-label">Прошедшее время в четверти (мин:сек)</label>
-                        <input type="text" class="input-field" id="manual-time" placeholder="Например: 05:30" readonly>
+                        <input type="text" class="input-field" id="manual-time" placeholder="Например: 01:27" readonly>
                     </div>
                     <div class="input-group">
                         <label class="input-label">Тотал букмекера</label>
-                        <input type="number" class="input-field" id="manual-total" placeholder="Например: 225.5" step="0.5" readonly>
+                        <input type="number" class="input-field" id="manual-total" placeholder="Например: 237.5" step="0.5" readonly>
                     </div>
                     <div class="input-group">
                         <label class="input-label">Фора букмекера</label>
-                        <input type="number" class="input-field" id="manual-handicap" placeholder="Например: +1.5" step="0.5" readonly>
+                        <input type="number" class="input-field" id="manual-handicap" placeholder="Например: -6.5" step="0.5" readonly>
                     </div>
                     <button class="upload-btn" id="manual-submit" style="width: 100%;">Рассчитать</button>
                 </div>
@@ -815,17 +828,17 @@
                     previewImg.style.display = 'block';
                     
                     // Показываем индикатор загрузки
-                    document.getElementById('ocr-score').textContent = 'Анализ...';
-                    document.getElementById('ocr-period').textContent = 'Анализ...';
-                    document.getElementById('ocr-time').textContent = 'Анализ...';
-                    document.getElementById('ocr-time-remaining').textContent = 'Анализ...';
-                    document.getElementById('ocr-total').textContent = 'Анализ...';
-                    document.getElementById('ocr-handicap').textContent = 'Анализ...';
+                    document.getElementById('ocr-score').innerHTML = '<span class="loading"></span>';
+                    document.getElementById('ocr-period').innerHTML = '<span class="loading"></span>';
+                    document.getElementById('ocr-time').innerHTML = '<span class="loading"></span>';
+                    document.getElementById('ocr-time-remaining').innerHTML = '<span class="loading"></span>';
+                    document.getElementById('ocr-total').innerHTML = '<span class="loading"></span>';
+                    document.getElementById('ocr-handicap').innerHTML = '<span class="loading"></span>';
                     
                     // Запускаем распознавание текста с помощью Tesseract
                     Tesseract.recognize(
                         file,
-                        'eng+rus',
+                        'rus+eng',
                         { 
                             logger: m => {
                                 if (m.status === 'recognizing text') {
@@ -845,11 +858,11 @@
             
             function processOCRText(text) {
                 // Улучшенные регулярные выражения для распознавания данных
-                const scoreRegex = /(\d+)\s*[:\\\/\-]\s*(\d+)/;
-                const periodRegex = /(\d+)\s*(?:четверть|четв|q|period|пер|кв)/i;
-                const timeRegex = /(\d{1,2}:\d{2})\s*(?:\||\.|\/|—|-|–)/;
-                const totalRegex = /Т[О0][ТT][АA][ЛJ][\s\S]{0,20}?([\d.,]+)/i;
-                const handicapRegex = /Ф[О0]?[РP][АA4]\s*[\(]?\s*([+-]?[\d.,]+)\s*[\)]?/i;
+                const scoreRegex = /(\d+)[\s\S]{0,50}?(\d+)\s*$/m;
+                const periodRegex = /(\d+)-я четверть/i;
+                const timeRegex = /(\d{1,2}:\d{2})\s*[|]/;
+                const totalRegex = /Т[О0]?[ТT]?[АA]?[ЛJ]?[^0-9]{0,20}?([\d.,]+)/i;
+                const handicapRegex = /Ф[12]\s*[\(]([+-]?[\d.,]+)[\)]/i;
                 
                 // Альтернативные варианты для тотала и форы
                 const alternativeTotalRegex = /(?:ТБ|ТМ|TB|TM)[\s\S]{0,15}?([\d.,]+)/i;
@@ -866,14 +879,25 @@
                 if (!totalMatch) totalMatch = text.match(alternativeTotalRegex);
                 if (!handicapMatch) handicapMatch = text.match(alternativeHandicapRegex);
                 
-                debugText.innerHTML += `Найдены данные: счет=${scoreMatch ? 'да' : 'нет'}, четверть=${periodMatch ? 'да' : 'нет'}, время=${timeMatch ? 'да' : 'нет'}, тотал=${totalMatch ? 'да' : 'нет'}, фора=${handicapMatch ? 'да' : 'нет'}<br>`;
+                debugText.innerHTML += `Найдены данные: счет=${scoreMatch ? 'да' : 'нет'}, четверть=${periodMatch ? 'да' : 'нет'}, время=${timeMatch ? 'да' : 'нет'}<br>`;
                 
                 let score1 = 0, score2 = 0, period = 1, timeElapsed = "00:00", total = 0, handicap = 0;
                 
-                // Обрабатываем счет
+                // Обрабатываем счет - улучшенная логика
                 if (scoreMatch) {
-                    score1 = parseInt(scoreMatch[1]);
-                    score2 = parseInt(scoreMatch[2]);
+                    // Ищем два числа, которые могут быть счетом
+                    const numbers = text.match(/\d+/g);
+                    if (numbers && numbers.length >= 2) {
+                        // Берем два последних больших числа (предполагая, что счет - это самые большие числа)
+                        const largeNumbers = numbers.filter(n => parseInt(n) > 10);
+                        if (largeNumbers.length >= 2) {
+                            score1 = parseInt(largeNumbers[largeNumbers.length - 2]);
+                            score2 = parseInt(largeNumbers[largeNumbers.length - 1]);
+                        } else {
+                            score1 = parseInt(numbers[numbers.length - 2]);
+                            score2 = parseInt(numbers[numbers.length - 1]);
+                        }
+                    }
                     document.getElementById('ocr-score').textContent = `${score1}:${score2}`;
                     document.getElementById('manual-score').value = `${score1}:${score2}`;
                 }
@@ -890,10 +914,8 @@
                     timeElapsed = timeMatch[1];
                     document.getElementById('ocr-time').textContent = timeElapsed;
                     document.getElementById('manual-time').value = timeElapsed;
-                }
-                
-                // Рассчитываем оставшееся время
-                if (period && timeElapsed) {
+                    
+                    // Рассчитываем оставшееся время
                     const periodLength = parseInt(leagueSelect.value);
                     const [minutesElapsed, secondsElapsed] = timeElapsed.split(':').map(Number);
                     const totalSecondsElapsed = minutesElapsed * 60 + secondsElapsed;
@@ -929,8 +951,8 @@
                 const scoreInput = document.getElementById('manual-score').value;
                 const periodInput = parseInt(document.getElementById('manual-period').value);
                 const timeInput = document.getElementById('manual-time').value;
-                const totalInput = parseFloat(document.getElementById('manual-total').value) || 0;
-                const handicapInput = parseFloat(document.getElementById('manual-handicap').value) || 0;
+                const totalInput = parseFloat(document.getElementById('manual-total').value);
+                const handicapInput = parseFloat(document.getElementById('manual-handicap').value);
                 
                 if (!scoreInput || !periodInput || !timeInput) {
                     alert('Пожалуйста, заполните все обязательные поля');
@@ -967,12 +989,8 @@
                 const periodLength = parseInt(leagueSelect.value);
                 const totalPeriods = 4;
                 
-                // Если нет данных о времени, используем значения по умолчанию
-                let minutesElapsed = 0, secondsElapsed = 0;
-                if (timeElapsed && timeElapsed.includes(':')) {
-                    [minutesElapsed, secondsElapsed] = timeElapsed.split(':').map(Number);
-                }
-                
+                // Парсим прошедшее время в четверти
+                const [minutesElapsed, secondsElapsed] = timeElapsed.split(':').map(Number);
                 const totalSecondsElapsed = minutesElapsed * 60 + secondsElapsed;
                 const totalSecondsInPeriod = periodLength * 60;
                 
@@ -984,7 +1002,7 @@
                 // Расчет текущего темпа игры (очков в минуту)
                 const totalPoints = score1 + score2;
                 const minutesPlayed = totalSecondsPlayed / 60;
-                const pointsPerMinute = minutesPlayed > 0 ? totalPoints / minutesPlayed : 1.5; // Значение по умолчанию
+                const pointsPerMinute = minutesPlayed > 0 ? totalPoints / minutesPlayed : 0;
                 
                 // Прогноз тотала на всю игру
                 const minutesRemainingInGame = totalSecondsRemainingInGame / 60;
@@ -1008,38 +1026,23 @@
                 let recommendation = "";
                 let confidence = 0;
                 
-                if (totalLine > 0) {
-                    if (predictedTotalPoints > totalLine) {
-                        recommendation = `Рекомендуется ставка на ТОТАЛ БОЛЬШЕ ${totalLine}`;
-                        confidence = 75;
-                    } else {
-                        recommendation = `Рекомендуется ставка на ТОТАЛ МЕНЬШЕ ${totalLine}`;
-                        confidence = 65;
-                    }
-                    
-                    // Учет форы
-                    const predictedDifference = predictedScore1 - predictedScore2;
-                    if (handicapLine && Math.abs(predictedDifference - handicapLine) > 3) {
-                        if (predictedDifference > handicapLine) {
-                            recommendation += ` и ПОБЕДА КОМАНДЫ 1 с форой ${handicapLine > 0 ? '+' : ''}${handicapLine}`;
-                        } else {
-                            recommendation += ` и ПОБЕДА КОМАНДЫ 2 с форой ${-handicapLine > 0 ? '+' : ''}${-handicapLine}`;
-                        }
-                        confidence += 5;
-                    }
+                if (predictedTotalPoints > totalLine) {
+                    recommendation = `Рекомендуется ставка на ТОТАЛ БОЛЬШЕ ${totalLine}`;
+                    confidence = 75;
                 } else {
-                    // Если нет данных о тотале, даем общую рекомендацию
-                    recommendation = "На основе текущего темпа игры: ";
-                    if (pointsPerMinute > 2.0) {
-                        recommendation += "высокий темп, рассмотрите ставку на ТОТАЛ БОЛЬШЕ";
-                        confidence = 60;
-                    } else if (pointsPerMinute > 1.5) {
-                        recommendation += "средний темп, ставки на тотал требуют осторожности";
-                        confidence = 50;
+                    recommendation = `Рекомендуется ставка на ТОТАЛ МЕНЬШЕ ${totalLine}`;
+                    confidence = 65;
+                }
+                
+                // Учет форы
+                const predictedDifference = predictedScore1 - predictedScore2;
+                if (handicapLine && Math.abs(predictedDifference - handicapLine) > 3) {
+                    if (predictedDifference > handicapLine) {
+                        recommendation += ` и ПОБЕДА КОМАНДЫ 1 с форой ${handicapLine > 0 ? '+' : ''}${handicapLine}`;
                     } else {
-                        recommendation += "низкий темп, рассмотрите ставку на ТОТАЛ МЕНЬШЕ";
-                        confidence = 60;
+                        recommendation += ` и ПОБЕДА КОМАНДЫ 2 с форой ${-handicapLine > 0 ? '+' : ''}${-handicapLine}`;
                     }
+                    confidence += 5;
                 }
                 
                 confidence = Math.min(95, confidence);
