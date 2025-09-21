@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Анализ баскетбольных ставок</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Точный анализ баскетбольных ставок</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,6 +13,10 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
         
         :root {
@@ -22,10 +26,24 @@
             --container-bg: rgba(255, 255, 255, 0.95);
             --text-color: #333;
             --card-bg: rgba(255, 255, 255, 0.9);
+            --input-bg: rgba(255, 255, 255, 0.95);
+            --input-color: #333;
             --stats-bg: rgba(240, 240, 240, 0.9);
             --positive-color: #4caf50;
             --negative-color: #f44336;
             --neutral-color: #2196f3;
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #4a8eff;
+            --secondary-color: #ff944d;
+            --background: linear-gradient(135deg, #0d1b45, #611c1c, #c2951d);
+            --container-bg: rgba(40, 40, 40, 0.95);
+            --text-color: #f0f0f0;
+            --card-bg: rgba(60, 60, 60, 0.9);
+            --input-bg: rgba(50, 50, 50, 0.95);
+            --input-color: #f0f0f0;
+            --stats-bg: rgba(30, 30, 30, 0.9);
         }
         
         body {
@@ -36,6 +54,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: background 0.3s ease;
         }
         
         .container {
@@ -45,6 +64,7 @@
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             overflow: hidden;
+            transition: all 0.3s ease;
         }
         
         header {
@@ -52,6 +72,7 @@
             color: white;
             padding: 20px;
             text-align: center;
+            position: relative;
         }
         
         h1 {
@@ -62,6 +83,23 @@
         .subtitle {
             font-size: 1.1rem;
             opacity: 0.9;
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
         }
         
         .main-content {
@@ -295,7 +333,11 @@
             padding: 10px;
             border-radius: 5px;
             border: 1px solid #ddd;
-            background: white;
+            background: var(--input-bg);
+            color: var(--input-color);
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
         
         .debug-info {
@@ -308,16 +350,6 @@
             max-height: 200px;
             overflow-y: auto;
             display: none;
-        }
-        
-        @media (max-width: 900px) {
-            .main-content {
-                flex-direction: column;
-            }
-            
-            .upload-section, .results-section {
-                min-width: 100%;
-            }
         }
         
         .manual-input {
@@ -342,14 +374,152 @@
             padding: 8px;
             border-radius: 5px;
             border: 1px solid #ddd;
+            background: var(--input-bg);
+            color: var(--input-color);
+            font-size: 16px; /* Prevents zoom on iOS */
+        }
+        
+        /* Custom Keyboard */
+        .custom-keyboard {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 10px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 1000;
+        }
+        
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        
+        .keyboard-key {
+            width: 60px;
+            height: 60px;
+            margin: 5px;
+            font-size: 1.5rem;
+            background: var(--input-bg);
+            color: var(--input-color);
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .keyboard-key-wide {
+            width: 120px;
+        }
+        
+        /* Media Queries for Responsiveness */
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .upload-section, .results-section {
+                min-width: 100%;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .upload-text {
+                font-size: 1rem;
+            }
+            
+            .keyboard-key {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            
+            .keyboard-key-wide {
+                width: 100px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                border-radius: 10px;
+            }
+            
+            header {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .section-title {
+                font-size: 1.2rem;
+            }
+            
+            .upload-area {
+                padding: 20px;
+            }
+            
+            .upload-icon {
+                font-size: 40px;
+            }
+            
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .keyboard-key {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+                margin: 3px;
+            }
+            
+            .keyboard-key-wide {
+                width: 86px;
+            }
+        }
+        
+        /* iPad Split Screen Support */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .container {
+                max-width: 90%;
+            }
+            
+            .main-content {
+                flex-direction: row;
+            }
+            
+            .upload-section, .results-section {
+                min-width: calc(50% - 20px);
+            }
+        }
+        
+        /* Prevent zoom on input focus for iOS */
+        @media screen and (max-width: 767px) {
+            input, select, textarea {
+                font-size: 16px !important;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Анализ баскетбольных ставок</h1>
-            <div class="subtitle">Точный расчет на основе данных букмекерской программы</div>
+            <h1>Точный анализ баскетбольных ставок</h1>
+            <div class="subtitle">Анализ на основе OCR-распознавания и математических моделей</div>
+            <button class="theme-toggle" id="theme-toggle">🌙</button>
         </header>
         
         <div class="main-content">
@@ -385,23 +555,23 @@
                     <h3>Или введите данные вручную:</h3>
                     <div class="input-group">
                         <label class="input-label">Текущий счет (Команда 1 : Команда 2)</label>
-                        <input type="text" class="input-field" id="manual-score" placeholder="Например: 31:28">
+                        <input type="text" class="input-field" id="manual-score" placeholder="Например: 31:28" readonly>
                     </div>
                     <div class="input-group">
                         <label class="input-label">Текущая четверть</label>
-                        <input type="number" class="input-field" id="manual-period" placeholder="1-4" min="1" max="4">
+                        <input type="number" class="input-field" id="manual-period" placeholder="1-4" min="1" max="4" readonly>
                     </div>
                     <div class="input-group">
                         <label class="input-label">Прошедшее время в четверти (мин:сек)</label>
-                        <input type="text" class="input-field" id="manual-time" placeholder="Например: 05:30">
+                        <input type="text" class="input-field" id="manual-time" placeholder="Например: 05:30" readonly>
                     </div>
                     <div class="input-group">
                         <label class="input-label">Тотал букмекера</label>
-                        <input type="number" class="input-field" id="manual-total" placeholder="Например: 225.5" step="0.5">
+                        <input type="number" class="input-field" id="manual-total" placeholder="Например: 225.5" step="0.5" readonly>
                     </div>
                     <div class="input-group">
                         <label class="input-label">Фора букмекера</label>
-                        <input type="number" class="input-field" id="manual-handicap" placeholder="Например: +1.5" step="0.5">
+                        <input type="number" class="input-field" id="manual-handicap" placeholder="Например: +1.5" step="0.5" readonly>
                     </div>
                     <button class="upload-btn" id="manual-submit" style="width: 100%;">Рассчитать</button>
                 </div>
@@ -485,6 +655,34 @@
         </div>
     </div>
 
+    <!-- Custom Keyboard -->
+    <div class="custom-keyboard" id="custom-keyboard">
+        <div class="keyboard-row">
+            <button class="keyboard-key" data-value="1">1</button>
+            <button class="keyboard-key" data-value="2">2</button>
+            <button class="keyboard-key" data-value="3">3</button>
+            <button class="keyboard-key" data-value=":" data-for="time">:</button>
+        </div>
+        <div class="keyboard-row">
+            <button class="keyboard-key" data-value="4">4</button>
+            <button class="keyboard-key" data-value="5">5</button>
+            <button class="keyboard-key" data-value="6">6</button>
+            <button class="keyboard-key" data-value="-" data-for="score">-</button>
+        </div>
+        <div class="keyboard-row">
+            <button class="keyboard-key" data-value="7">7</button>
+            <button class="keyboard-key" data-value="8">8</button>
+            <button class="keyboard-key" data-value="9">9</button>
+            <button class="keyboard-key" data-value="." data-for="total">.</button>
+        </div>
+        <div class="keyboard-row">
+            <button class="keyboard-key" data-value="0">0</button>
+            <button class="keyboard-key" data-value="+" data-for="handicap">+</button>
+            <button class="keyboard-key" data-action="backspace"><i class="fas fa-backspace"></i></button>
+            <button class="keyboard-key" data-action="close">Готово</button>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const uploadArea = document.getElementById('upload-area');
@@ -495,6 +693,82 @@
             const debugInfo = document.getElementById('debug-info');
             const debugText = document.getElementById('debug-text');
             const manualSubmit = document.getElementById('manual-submit');
+            const themeToggle = document.getElementById('theme-toggle');
+            const customKeyboard = document.getElementById('custom-keyboard');
+            const manualInputs = document.querySelectorAll('.input-field');
+            
+            let activeInput = null;
+            let isDarkTheme = false;
+            
+            // Prevent zoom on double tap
+            document.addEventListener('dblclick', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+            
+            // Prevent zoom on double tap on iOS
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Theme toggle functionality
+            themeToggle.addEventListener('click', function() {
+                isDarkTheme = !isDarkTheme;
+                if (isDarkTheme) {
+                    document.body.setAttribute('data-theme', 'dark');
+                    themeToggle.textContent = '☀️';
+                } else {
+                    document.body.removeAttribute('data-theme');
+                    themeToggle.textContent = '🌙';
+                }
+            });
+            
+            // Custom keyboard functionality
+            manualInputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    activeInput = this;
+                    customKeyboard.style.display = 'block';
+                    
+                    // Show/hide special keys based on input type
+                    const specialKeys = document.querySelectorAll('[data-for]');
+                    specialKeys.forEach(key => {
+                        const forInput = key.getAttribute('data-for');
+                        key.style.display = forInput === this.id.replace('manual-', '') ? 'flex' : 'none';
+                    });
+                });
+            });
+            
+            // Keyboard button clicks
+            document.querySelectorAll('.keyboard-key').forEach(key => {
+                key.addEventListener('click', function() {
+                    if (!activeInput) return;
+                    
+                    const value = this.getAttribute('data-value');
+                    const action = this.getAttribute('data-action');
+                    
+                    if (action === 'backspace') {
+                        activeInput.value = activeInput.value.slice(0, -1);
+                    } else if (action === 'close') {
+                        customKeyboard.style.display = 'none';
+                        activeInput.blur();
+                        activeInput = null;
+                    } else if (value) {
+                        activeInput.value += value;
+                    }
+                });
+            });
+            
+            // Close keyboard when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.custom-keyboard') && !e.target.closest('.input-field')) {
+                    customKeyboard.style.display = 'none';
+                    if (activeInput) {
+                        activeInput.blur();
+                        activeInput = null;
+                    }
+                }
+            });
             
             // Обработчики для загрузки изображения
             uploadArea.addEventListener('click', () => fileInput.click());
@@ -592,6 +866,7 @@
                     score1 = parseInt(scoreMatch[1]);
                     score2 = parseInt(scoreMatch[2]);
                     document.getElementById('ocr-score').textContent = `${score1}:${score2}`;
+                    document.getElementById('manual-score').value = `${score1}:${score2}`;
                 }
                 
                 // Обрабатываем период и время
@@ -599,7 +874,9 @@
                     period = parseInt(periodMatch[1]);
                     timeElapsed = periodMatch[2];
                     document.getElementById('ocr-period').textContent = `${period} четверть`;
+                    document.getElementById('manual-period').value = period;
                     document.getElementById('ocr-time').textContent = timeElapsed;
+                    document.getElementById('manual-time').value = timeElapsed;
                     
                     // Рассчитываем оставшееся время
                     const periodLength = parseInt(leagueSelect.value);
@@ -616,7 +893,9 @@
                 } else if (timeMatch) {
                     timeElapsed = timeMatch[1];
                     document.getElementById('ocr-period').textContent = '4 четверть';
+                    document.getElementById('manual-period').value = 4;
                     document.getElementById('ocr-time').textContent = timeElapsed;
+                    document.getElementById('manual-time').value = timeElapsed;
                     
                     // Рассчитываем оставшееся время
                     const periodLength = parseInt(leagueSelect.value);
@@ -636,12 +915,14 @@
                 if (totalMatch) {
                     total = parseFloat(totalMatch[1].replace(',', '.'));
                     document.getElementById('ocr-total').textContent = total;
+                    document.getElementById('manual-total').value = total;
                 }
                 
                 // Обрабатываем фору
                 if (handicapMatch) {
                     handicap = parseFloat(handicapMatch[1].replace(',', '.'));
                     document.getElementById('ocr-handicap').textContent = handicap;
+                    document.getElementById('manual-handicap').value = handicap;
                 }
                 
                 // Генерируем прогноз
