@@ -675,23 +675,23 @@
             <button class="keyboard-key" data-value="1">1</button>
             <button class="keyboard-key" data-value="2">2</button>
             <button class="keyboard-key" data-value="3">3</button>
-            <button class="keyboard-key" data-value=":" data-for="time">:</button>
+            <button class="keyboard-key" data-value=":" data-for="score">:</button>
         </div>
         <div class="keyboard-row">
             <button class="keyboard-key" data-value="4">4</button>
             <button class="keyboard-key" data-value="5">5</button>
             <button class="keyboard-key" data-value="6">6</button>
-            <button class="keyboard-key" data-value="-" data-for="score">-</button>
+            <button class="keyboard-key" data-value="." data-for="total">.</button>
         </div>
         <div class="keyboard-row">
             <button class="keyboard-key" data-value="7">7</button>
             <button class="keyboard-key" data-value="8">8</button>
             <button class="keyboard-key" data-value="9">9</button>
-            <button class="keyboard-key" data-value="." data-for="total">.</button>
+            <button class="keyboard-key" data-value="0">0</button>
         </div>
         <div class="keyboard-row">
-            <button class="keyboard-key" data-value="0">0</button>
             <button class="keyboard-key" data-value="+" data-for="handicap">+</button>
+            <button class="keyboard-key" data-value="-" data-for="handicap">-</button>
             <button class="keyboard-key" data-action="backspace"><i class="fas fa-backspace"></i></button>
             <button class="keyboard-key" data-action="close">Готово</button>
         </div>
@@ -796,7 +796,7 @@
                 uploadArea.style.backgroundColor = 'rgba(26, 115, 232, 0.2)';
             });
             
-            uploadArea.addEventListener('dragleave', () => {
+            uploadArea.addEventListener('dragleave', () {
                 uploadArea.style.backgroundColor = '';
             });
             
