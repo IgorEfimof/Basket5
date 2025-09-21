@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Точный анализ баскетбольных ставок</title>
+    <title>Анализ баскетбольных ставок</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -22,8 +22,6 @@
             --container-bg: rgba(255, 255, 255, 0.95);
             --text-color: #333;
             --card-bg: rgba(255, 255, 255, 0.9);
-            --input-bg: rgba(255, 255, 255, 0.95);
-            --input-color: #333;
             --stats-bg: rgba(240, 240, 240, 0.9);
             --positive-color: #4caf50;
             --negative-color: #f44336;
@@ -278,20 +276,6 @@
             border-radius: 5px;
         }
         
-        .loader {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: var(--primary-color);
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
         .championship-selector {
             margin: 15px 0;
             padding: 10px;
@@ -335,26 +319,48 @@
                 min-width: 100%;
             }
         }
+        
+        .manual-input {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--stats-bg);
+            border-radius: 10px;
+        }
+        
+        .input-group {
+            margin-bottom: 10px;
+        }
+        
+        .input-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Точный анализ баскетбольных ставок</h1>
-            <div class="subtitle">Анализ на основе OCR-распознавания и математических моделей</div>
+            <h1>Анализ баскетбольных ставок</h1>
+            <div class="subtitle">Точный расчет на основе данных букмекерской программы</div>
         </header>
         
         <div class="main-content">
             <div class="upload-section">
-                <h2 class="section-title">Загрузка скриншота</h2>
+                <h2 class="section-title">Загрузка данных</h2>
                 
                 <div class="championship-selector">
                     <label class="championship-label">Выберите лигу:</label>
                     <select class="championship-select" id="league-select">
-                        <option value="nba">NBA (4×12 мин)</option>
-                        <option value="euroleague">Евролига (4×10 мин)</option>
-                        <option value="vtb">ВТБ (4×10 мин)</option>
-                        <option value="other">Другая лига</option>
+                        <option value="10">Евролига, ВТБ, IPBL (4×10 мин)</option>
+                        <option value="12">NBA (4×12 мин)</option>
                     </select>
                 </div>
                 
@@ -363,7 +369,7 @@
                         <i class="fas fa-camera"></i>
                     </div>
                     <div class="upload-text">
-                        Перетащите сюда скриншот букмекерской программы или нажмите для выбора файла
+                        Перетащите сюда скриншот или нажмите для выбора файла
                     </div>
                     <button class="upload-btn" id="upload-btn">Выбрать файл</button>
                 </div>
@@ -375,26 +381,39 @@
                     <img id="screenshot-preview" src="" alt="Превью скриншота">
                 </div>
                 
+                <div class="manual-input">
+                    <h3>Или введите данные вручную:</h3>
+                    <div class="input-group">
+                        <label class="input-label">Текущий счет (Команда 1 : Команда 2)</label>
+                        <input type="text" class="input-field" id="manual-score" placeholder="Например: 31:28">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Текущая четверть</label>
+                        <input type="number" class="input-field" id="manual-period" placeholder="1-4" min="1" max="4">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Прошедшее время в четверти (мин:сек)</label>
+                        <input type="text" class="input-field" id="manual-time" placeholder="Например: 05:30">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Тотал букмекера</label>
+                        <input type="number" class="input-field" id="manual-total" placeholder="Например: 225.5" step="0.5">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Фора букмекера</label>
+                        <input type="number" class="input-field" id="manual-handicap" placeholder="Например: +1.5" step="0.5">
+                    </div>
+                    <button class="upload-btn" id="manual-submit" style="width: 100%;">Рассчитать</button>
+                </div>
+                
                 <div class="ocr-results">
                     <h3 class="ocr-title">Распознанные данные:</h3>
                     <div class="ocr-item">
-                        <span class="ocr-label">Команда 1:</span>
-                        <span class="ocr-value" id="ocr-team1">--</span>
+                        <span class="ocr-label">Текущий счет:</span>
+                        <span class="ocr-value" id="ocr-score">--</span>
                     </div>
                     <div class="ocr-item">
-                        <span class="ocr-label">Команда 2:</span>
-                        <span class="ocr-value" id="ocr-team2">--</span>
-                    </div>
-                    <div class="ocr-item">
-                        <span class="ocr-label">Очки команды 1:</span>
-                        <span class="ocr-value" id="ocr-score1">--</span>
-                    </div>
-                    <div class="ocr-item">
-                        <span class="ocr-label">Очки команды 2:</span>
-                        <span class="ocr-value" id="ocr-score2">--</span>
-                    </div>
-                    <div class="ocr-item">
-                        <span class="ocr-label">Период:</span>
+                        <span class="ocr-label">Четверть:</span>
                         <span class="ocr-value" id="ocr-period">--</span>
                     </div>
                     <div class="ocr-item">
@@ -425,7 +444,7 @@
                 <h2 class="section-title">Результаты анализа</h2>
                 
                 <div class="analysis-result">
-                    <h3>Прогноз на следующую четверть</h3>
+                    <h3>Прогноз на оставшуюся часть матча</h3>
                     
                     <div class="result-grid">
                         <div class="result-card">
@@ -434,13 +453,13 @@
                         </div>
                         
                         <div class="result-card">
-                            <div class="result-title">Преимущество</div>
-                            <div class="result-value neutral" id="predicted-advantage">--</div>
+                            <div class="result-title">Темп игры (очков/мин)</div>
+                            <div class="result-value neutral" id="predicted-pace">--</div>
                         </div>
                         
                         <div class="result-card">
-                            <div class="result-title">Темп игры</div>
-                            <div class="result-value neutral" id="predicted-pace">--</div>
+                            <div class="result-title">Прогноз счета</div>
+                            <div class="result-value neutral" id="predicted-score">--</div>
                         </div>
                         
                         <div class="result-card">
@@ -448,33 +467,11 @@
                             <div class="result-value neutral" id="overtime-probability">--</div>
                         </div>
                     </div>
-                    
-                    <div class="result-grid" style="margin-top: 20px;">
-                        <div class="result-card">
-                            <div class="result-title">Эффективность атаки</div>
-                            <div class="result-value neutral" id="offense-efficiency">--</div>
-                        </div>
-                        
-                        <div class="result-card">
-                            <div class="result-title">Эффективность защиты</div>
-                            <div class="result-value neutral" id="defense-efficiency">--</div>
-                        </div>
-                        
-                        <div class="result-card">
-                            <div class="result-title">Фактор усталости</div>
-                            <div class="result-value neutral" id="fatigue-factor">--</div>
-                        </div>
-                        
-                        <div class="result-card">
-                            <div class="result-title">Коэффициент давления</div>
-                            <div class="result-value neutral" id="pressure-factor">--</div>
-                        </div>
-                    </div>
                 </div>
                 
                 <div class="recommendation">
                     <div class="recommendation-title">Рекомендуемая ставка</div>
-                    <div class="recommendation-desc" id="recommendation-text">Загрузите скриншот для получения рекомендации</div>
+                    <div class="recommendation-desc" id="recommendation-text">Загрузите скриншот или введите данные для получения рекомендации</div>
                     
                     <div class="confidence">
                         <span class="confidence-text">Уверенность:</span>
@@ -497,6 +494,7 @@
             const leagueSelect = document.getElementById('league-select');
             const debugInfo = document.getElementById('debug-info');
             const debugText = document.getElementById('debug-text');
+            const manualSubmit = document.getElementById('manual-submit');
             
             // Обработчики для загрузки изображения
             uploadArea.addEventListener('click', () => fileInput.click());
@@ -529,6 +527,11 @@
                 }
             });
             
+            // Обработчик для ручного ввода
+            manualSubmit.addEventListener('click', () => {
+                processManualInput();
+            });
+            
             function processImage(file) {
                 const reader = new FileReader();
                 
@@ -537,10 +540,7 @@
                     previewImg.style.display = 'block';
                     
                     // Показываем индикатор загрузки
-                    document.getElementById('ocr-team1').textContent = 'Анализ...';
-                    document.getElementById('ocr-team2').textContent = 'Анализ...';
-                    document.getElementById('ocr-score1').textContent = 'Анализ...';
-                    document.getElementById('ocr-score2').textContent = 'Анализ...';
+                    document.getElementById('ocr-score').textContent = 'Анализ...';
                     document.getElementById('ocr-period').textContent = 'Анализ...';
                     document.getElementById('ocr-time').textContent = 'Анализ...';
                     document.getElementById('ocr-time-remaining').textContent = 'Анализ...';
@@ -550,7 +550,7 @@
                     // Запускаем распознавание текста с помощью Tesseract
                     Tesseract.recognize(
                         file,
-                        'eng+rus', // Языки для распознавания
+                        'eng+rus',
                         { 
                             logger: m => {
                                 if (m.status === 'recognizing text') {
@@ -560,7 +560,6 @@
                             }
                         }
                     ).then(({ data: { text } }) => {
-                        // Обрабатываем распознанный текст
                         debugText.innerHTML += `Распознанный текст:<br><textarea rows="5" style="width:100%">${text}</textarea><br>`;
                         processOCRText(text);
                     });
@@ -570,58 +569,41 @@
             }
             
             function processOCRText(text) {
-                console.log("Распознанный текст:", text);
-                
-                // Улучшенные регулярные выражения для извлечения данных
-                const teamRegex = /([А-Яа-я\w\s]+?Pro)\s*[|]?\s*(\d+)\s*[|]?\s*(\d+)\s*[|]?\s*(\d+)\s*[|]?\s*(\d+)\s*[|]?\s*(\d+)/gi;
+                // Регулярные выражения для извлечения данных
+                const scoreRegex = /(\d+)\s*[-:]\s*(\d+)/;
                 const periodRegex = /(\d+)[-я]\s*четверть\s*[,]?\s*(\d{1,2}:\d{2})/i;
                 const timeRegex = /(\d{1,2}:\d{2})\s*[|]/;
-                const totalRegex = /Тотал\s*[\(]?([\d.,]+)[\)]?/i;
+                const totalRegex = /Тотал[:\s]*[\(]?([\d.,]+)[\)]?/i;
                 const handicapRegex = /Ф[12]\s*[\(]([+-]?[\d.,]+)[\)]/i;
                 
                 // Извлекаем данные
-                const teamMatches = [...text.matchAll(teamRegex)];
+                const scoreMatch = text.match(scoreRegex);
                 const periodMatch = text.match(periodRegex);
                 const timeMatch = text.match(timeRegex);
                 const totalMatch = text.match(totalRegex);
                 const handicapMatch = text.match(handicapRegex);
                 
-                debugText.innerHTML += `Найдено команд: ${teamMatches.length}<br>`;
+                debugText.innerHTML += `Найдены данные: счет=${scoreMatch ? 'да' : 'нет'}, четверть=${periodMatch ? 'да' : 'нет'}, время=${timeMatch ? 'да' : 'нет'}<br>`;
                 
-                // Обрабатываем данные команд
-                if (teamMatches && teamMatches.length >= 2) {
-                    document.getElementById('ocr-team1').textContent = teamMatches[0][1].trim();
-                    document.getElementById('ocr-team2').textContent = teamMatches[1][1].trim();
-                    
-                    // Суммируем очки по четвертям для получения текущего счета
-                    const team1Quarters = teamMatches[0].slice(2, 6).map(Number);
-                    const team2Quarters = teamMatches[1].slice(2, 6).map(Number);
-                    
-                    const team1Score = team1Quarters.reduce((a, b) => a + b, 0);
-                    const team2Score = team2Quarters.reduce((a, b) => a + b, 0);
-                    
-                    document.getElementById('ocr-score1').textContent = team1Score;
-                    document.getElementById('ocr-score2').textContent = team2Score;
-                    
-                    debugText.innerHTML += `Команда 1: ${teamMatches[0][1]}, очки: ${team1Score}<br>`;
-                    debugText.innerHTML += `Команда 2: ${teamMatches[1][1]}, очки: ${team2Score}<br>`;
+                let score1 = 0, score2 = 0, period = 1, timeElapsed = "00:00", total = 0, handicap = 0;
+                
+                // Обрабатываем счет
+                if (scoreMatch) {
+                    score1 = parseInt(scoreMatch[1]);
+                    score2 = parseInt(scoreMatch[2]);
+                    document.getElementById('ocr-score').textContent = `${score1}:${score2}`;
                 }
                 
                 // Обрабатываем период и время
                 if (periodMatch) {
-                    document.getElementById('ocr-period').textContent = periodMatch[1] + ' четверть';
+                    period = parseInt(periodMatch[1]);
+                    timeElapsed = periodMatch[2];
+                    document.getElementById('ocr-period').textContent = `${period} четверть`;
+                    document.getElementById('ocr-time').textContent = timeElapsed;
                     
-                    // Время в формате "минуты:секунды" - это прошедшее время в четверти
-                    const timeParts = periodMatch[2].split(':');
-                    const minutesElapsed = parseInt(timeParts[0]) || 0;
-                    const secondsElapsed = parseInt(timeParts[1]) || 0;
-                    
-                    document.getElementById('ocr-time').textContent = periodMatch[2];
-                    
-                    // Рассчитываем оставшееся время в четверти
-                    const league = leagueSelect.value;
-                    const periodLength = league === 'nba' ? 12 : 10; // минут в четверти
-                    
+                    // Рассчитываем оставшееся время
+                    const periodLength = parseInt(leagueSelect.value);
+                    const [minutesElapsed, secondsElapsed] = timeElapsed.split(':').map(Number);
                     const totalSecondsElapsed = minutesElapsed * 60 + secondsElapsed;
                     const totalSecondsInPeriod = periodLength * 60;
                     const totalSecondsRemaining = totalSecondsInPeriod - totalSecondsElapsed;
@@ -631,22 +613,14 @@
                     
                     const timeRemainingFormatted = `${minutesRemaining}:${secondsRemaining.toString().padStart(2, '0')}`;
                     document.getElementById('ocr-time-remaining').textContent = timeRemainingFormatted;
-                    
-                    debugText.innerHTML += `Период: ${periodMatch[1]}, время: ${periodMatch[2]}<br>`;
-                    debugText.innerHTML += `Оставшееся время: ${timeRemainingFormatted}<br>`;
                 } else if (timeMatch) {
-                    document.getElementById('ocr-period').textContent = '4 четверть'; // предполагаем последнюю четверть
+                    timeElapsed = timeMatch[1];
+                    document.getElementById('ocr-period').textContent = '4 четверть';
+                    document.getElementById('ocr-time').textContent = timeElapsed;
                     
-                    const timeParts = timeMatch[1].split(':');
-                    const minutesElapsed = parseInt(timeParts[0]) || 0;
-                    const secondsElapsed = parseInt(timeParts[1]) || 0;
-                    
-                    document.getElementById('ocr-time').textContent = timeMatch[1];
-                    
-                    // Рассчитываем оставшееся время в четверти
-                    const league = leagueSelect.value;
-                    const periodLength = league === 'nba' ? 12 : 10; // минут в четверти
-                    
+                    // Рассчитываем оставшееся время
+                    const periodLength = parseInt(leagueSelect.value);
+                    const [minutesElapsed, secondsElapsed] = timeElapsed.split(':').map(Number);
                     const totalSecondsElapsed = minutesElapsed * 60 + secondsElapsed;
                     const totalSecondsInPeriod = periodLength * 60;
                     const totalSecondsRemaining = totalSecondsInPeriod - totalSecondsElapsed;
@@ -656,124 +630,102 @@
                     
                     const timeRemainingFormatted = `${minutesRemaining}:${secondsRemaining.toString().padStart(2, '0')}`;
                     document.getElementById('ocr-time-remaining').textContent = timeRemainingFormatted;
-                    
-                    debugText.innerHTML += `Время: ${timeMatch[1]} (период предполагается 4-й)<br>`;
-                    debugText.innerHTML += `Оставшееся время: ${timeRemainingFormatted}<br>`;
                 }
                 
                 // Обрабатываем тотал
                 if (totalMatch) {
-                    document.getElementById('ocr-total').textContent = totalMatch[1].replace(',', '.');
-                    debugText.innerHTML += `Тотал: ${totalMatch[1]}<br>`;
+                    total = parseFloat(totalMatch[1].replace(',', '.'));
+                    document.getElementById('ocr-total').textContent = total;
                 }
                 
                 // Обрабатываем фору
                 if (handicapMatch) {
-                    document.getElementById('ocr-handicap').textContent = handicapMatch[1].replace(',', '.');
-                    debugText.innerHTML += `Фора: ${handicapMatch[1]}<br>`;
+                    handicap = parseFloat(handicapMatch[1].replace(',', '.'));
+                    document.getElementById('ocr-handicap').textContent = handicap;
                 }
                 
-                // Генерируем реальный прогноз на основе распознанных данных
-                generateRealPredictions();
+                // Генерируем прогноз
+                generatePredictions(score1, score2, period, timeElapsed, total, handicap);
             }
             
-            function generateRealPredictions() {
-                // Извлекаем распознанные значения
-                const team1 = document.getElementById('ocr-team1').textContent;
-                const team2 = document.getElementById('ocr-team2').textContent;
-                const score1 = parseInt(document.getElementById('ocr-score1').textContent) || 0;
-                const score2 = parseInt(document.getElementById('ocr-score2').textContent) || 0;
-                const periodText = document.getElementById('ocr-period').textContent;
-                const timeText = document.getElementById('ocr-time').textContent;
-                const timeRemainingText = document.getElementById('ocr-time-remaining').textContent;
-                const totalLine = parseFloat(document.getElementById('ocr-total').textContent) || 0;
-                const handicapLine = parseFloat(document.getElementById('ocr-handicap').textContent) || 0;
-                const league = leagueSelect.value;
+            function processManualInput() {
+                const scoreInput = document.getElementById('manual-score').value;
+                const periodInput = parseInt(document.getElementById('manual-period').value);
+                const timeInput = document.getElementById('manual-time').value;
+                const totalInput = parseFloat(document.getElementById('manual-total').value);
+                const handicapInput = parseFloat(document.getElementById('manual-handicap').value);
                 
-                // Парсим период
-                let period = 1;
-                if (periodText.includes('1') || periodText.includes('первая')) period = 1;
-                else if (periodText.includes('2') || periodText.includes('вторая')) period = 2;
-                else if (periodText.includes('3') || periodText.includes('третья')) period = 3;
-                else if (periodText.includes('4') || periodText.includes('четвертая')) period = 4;
-                
-                // Парсим прошедшее время в четверти
-                let minutesElapsed = 0;
-                let secondsElapsed = 0;
-                if (timeText.includes(':')) {
-                    const timeParts = timeText.split(':');
-                    minutesElapsed = parseInt(timeParts[0]) || 0;
-                    secondsElapsed = parseInt(timeParts[1]) || 0;
+                if (!scoreInput || !periodInput || !timeInput) {
+                    alert('Пожалуйста, заполните все обязательные поля');
+                    return;
                 }
                 
-                // Парсим оставшееся время в четверти
-                let minutesRemaining = 0;
-                let secondsRemaining = 0;
-                if (timeRemainingText.includes(':')) {
-                    const timeParts = timeRemainingText.split(':');
-                    minutesRemaining = parseInt(timeParts[0]) || 0;
-                    secondsRemaining = parseInt(timeParts[1]) || 0;
-                }
+                const [score1, score2] = scoreInput.split(':').map(Number);
                 
-                // Определяем параметры лиги
-                let periodLength, totalPeriods;
-                if (league === 'nba') {
-                    periodLength = 12; // 12 минут в четверти в NBA
-                    totalPeriods = 4;
-                } else {
-                    periodLength = 10; // 10 минут в четверти в других лигах
-                    totalPeriods = 4;
-                }
+                document.getElementById('ocr-score').textContent = `${score1}:${score2}`;
+                document.getElementById('ocr-period').textContent = `${periodInput} четверть`;
+                document.getElementById('ocr-time').textContent = timeInput;
                 
-                // РЕАЛЬНЫЕ РАСЧЕТЫ
-                
-                // 1. Расчет прошедшего и оставшегося времени
+                // Рассчитываем оставшееся время
+                const periodLength = parseInt(leagueSelect.value);
+                const [minutesElapsed, secondsElapsed] = timeInput.split(':').map(Number);
                 const totalSecondsElapsed = minutesElapsed * 60 + secondsElapsed;
                 const totalSecondsInPeriod = periodLength * 60;
-                const totalSecondsRemainingInPeriod = minutesRemaining * 60 + secondsRemaining;
+                const totalSecondsRemaining = totalSecondsInPeriod - totalSecondsElapsed;
                 
+                const minutesRemaining = Math.floor(totalSecondsRemaining / 60);
+                const secondsRemaining = totalSecondsRemaining % 60;
+                
+                const timeRemainingFormatted = `${minutesRemaining}:${secondsRemaining.toString().padStart(2, '0')}`;
+                document.getElementById('ocr-time-remaining').textContent = timeRemainingFormatted;
+                
+                document.getElementById('ocr-total').textContent = totalInput || '--';
+                document.getElementById('ocr-handicap').textContent = handicapInput || '--';
+                
+                // Генерируем прогноз
+                generatePredictions(score1, score2, periodInput, timeInput, totalInput, handicapInput);
+            }
+            
+            function generatePredictions(score1, score2, period, timeElapsed, totalLine, handicapLine) {
+                const periodLength = parseInt(leagueSelect.value);
+                const totalPeriods = 4;
+                
+                // Парсим прошедшее время в четверти
+                const [minutesElapsed, secondsElapsed] = timeElapsed.split(':').map(Number);
+                const totalSecondsElapsed = minutesElapsed * 60 + secondsElapsed;
+                const totalSecondsInPeriod = periodLength * 60;
+                
+                // Расчет прошедшего и оставшегося времени в матче
                 const totalSecondsPlayed = (period - 1) * totalSecondsInPeriod + totalSecondsElapsed;
                 const totalSecondsInGame = totalPeriods * totalSecondsInPeriod;
                 const totalSecondsRemainingInGame = totalSecondsInGame - totalSecondsPlayed;
                 
-                // 2. Расчет текущего темпа игры (очков в минуту)
+                // Расчет текущего темпа игры (очков в минуту)
                 const totalPoints = score1 + score2;
                 const minutesPlayed = totalSecondsPlayed / 60;
                 const pointsPerMinute = minutesPlayed > 0 ? totalPoints / minutesPlayed : 0;
                 
-                // 3. Прогноз тотала на всю игру
+                // Прогноз тотала на всю игру
                 const minutesRemainingInGame = totalSecondsRemainingInGame / 60;
                 const predictedTotalPoints = totalPoints + (pointsPerMinute * minutesRemainingInGame);
                 
-                // 4. Прогноз счета
+                // Прогноз счета
                 const team1Share = totalPoints > 0 ? score1 / totalPoints : 0.5;
                 const team2Share = totalPoints > 0 ? score2 / totalPoints : 0.5;
                 
                 const predictedScore1 = score1 + (pointsPerMinute * minutesRemainingInGame * team1Share);
                 const predictedScore2 = score2 + (pointsPerMinute * minutesRemainingInGame * team2Share);
                 
-                // 5. Расчет эффективности команд
-                const efficiency1 = team1Share * 100;
-                const efficiency2 = team2Share * 100;
-                
-                // 6. Расчет вероятности овертайма
+                // Расчет вероятности овертайма
                 let overtimeProbability = 0;
                 if (period === 4 && Math.abs(score1 - score2) <= 5) {
-                    // Близкий счет в последней четверти увеличивает вероятность овертайма
                     overtimeProbability = 30 + (5 - Math.abs(score1 - score2)) * 5;
                     overtimeProbability = Math.min(80, overtimeProbability);
                 }
                 
-                // 7. Расчет факторов усталости и давления
-                const fatigueFactor = (period / totalPeriods) * 100;
-                const pressureFactor = (period >= 3) ? 70 : 30;
-                
-                // 8. Формирование рекомендации
+                // Формирование рекомендации
                 let recommendation = "";
                 let confidence = 0;
-                
-                // Учет форы
-                const predictedDifference = predictedScore1 - predictedScore2;
                 
                 if (predictedTotalPoints > totalLine) {
                     recommendation = `Рекомендуется ставка на ТОТАЛ БОЛЬШЕ ${totalLine}`;
@@ -784,38 +736,29 @@
                 }
                 
                 // Учет форы
-                if (handicapLine !== 0) {
+                const predictedDifference = predictedScore1 - predictedScore2;
+                if (handicapLine && Math.abs(predictedDifference - handicapLine) > 3) {
                     if (predictedDifference > handicapLine) {
-                        recommendation += ` и ПОБЕДА ${team1} с форой ${handicapLine > 0 ? '+' : ''}${handicapLine}`;
+                        recommendation += ` и ПОБЕДА КОМАНДЫ 1 с форой ${handicapLine > 0 ? '+' : ''}${handicapLine}`;
                     } else {
-                        recommendation += ` и ПОБЕДА ${team2} с форой ${-handicapLine > 0 ? '+' : ''}${-handicapLine}`;
+                        recommendation += ` и ПОБЕДА КОМАНДЫ 2 с форой ${-handicapLine > 0 ? '+' : ''}${-handicapLine}`;
                     }
                     confidence += 5;
                 }
                 
-                // Ограничение уверенности до 100%
                 confidence = Math.min(95, confidence);
                 
                 // Обновляем интерфейс с результатами
                 document.getElementById('predicted-total').textContent = Math.round(predictedTotalPoints);
-                document.getElementById('predicted-advantage').textContent = predictedDifference > 0 ? 
-                    `${team1}: +${Math.round(predictedDifference)}` : 
-                    `${team2}: +${Math.round(-predictedDifference)}`;
-                
-                document.getElementById('predicted-pace').textContent = pointsPerMinute.toFixed(2) + " очков/мин";
+                document.getElementById('predicted-pace').textContent = pointsPerMinute.toFixed(2);
+                document.getElementById('predicted-score').textContent = `${Math.round(predictedScore1)}:${Math.round(predictedScore2)}`;
                 document.getElementById('overtime-probability').textContent = Math.round(overtimeProbability) + "%";
-                
-                document.getElementById('offense-efficiency').textContent = efficiency1.toFixed(1) + "% / " + efficiency2.toFixed(1) + "%";
-                document.getElementById('defense-efficiency').textContent = (100 - efficiency2).toFixed(1) + "% / " + (100 - efficiency1).toFixed(1) + "%";
-                
-                document.getElementById('fatigue-factor').textContent = Math.round(fatigueFactor) + "%";
-                document.getElementById('pressure-factor').textContent = Math.round(pressureFactor) + "%";
                 
                 document.getElementById('recommendation-text').textContent = recommendation;
                 document.getElementById('confidence-bar').style.width = `${confidence}%`;
                 document.getElementById('confidence-value').textContent = `${confidence}%`;
                 
-                debugText.innerHTML += `Прогноз: тотал=${Math.round(predictedTotalPoints)}, разница=${Math.round(predictedDifference)}<br>`;
+                debugText.innerHTML += `Прогноз: тотал=${Math.round(predictedTotalPoints)}, счет=${Math.round(predictedScore1)}:${Math.round(predictedScore2)}<br>`;
                 debugText.innerHTML += `Рекомендация: ${recommendation}<br>`;
             }
         });
