@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Анализатор ставок TT PRO v2.1</title>
+    <title>Анализатор ставок TT PRO v2.2</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -636,19 +636,53 @@
         .total-type.under {
             background: var(--negative-color);
         }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .status-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .status-success {
+            background-color: rgba(39, 174, 96, 0.2);
+            color: var(--positive-color);
+        }
+        
+        .status-error {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--negative-color);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Анализатор ставок TT PRO v2.1</h1>
-            <div class="subtitle">Точный анализ на основе OCR-распознавания</div>
+            <h1>Анализатор ставок TT PRO v2.2</h1>
+            <div class="subtitle">Супер-точный анализ на основе OCR-распознавания</div>
             <button class="theme-toggle" id="theme-toggle">🌙</button>
         </header>
         
         <div class="tabs">
             <button class="tab active" data-tab="upload">Загрузка</button>
             <button class="tab" data-tab="results">Результаты</button>
+            <button class="tab" data-tab="stats">Статистика</button>
         </div>
         
         <div class="main-content">
@@ -660,6 +694,7 @@
                     <select class="championship-select" id="league-select">
                         <option value="10">Евролига, ВТБ, IPBL (4×10 мин)</option>
                         <option value="12">NBA (4×12 мин)</option>
+                        <option value="12">NCAA (2×20 мин)</option>
                     </select>
                 </div>
                 
@@ -668,7 +703,7 @@
                         <i class="fas fa-camera"></i>
                     </div>
                     <div class="upload-text">
-                        Нажмите для выбора файла
+                        Нажмите для выбора файла или перетащите скриншот
                     </div>
                     <button class="upload-btn" id="upload-btn">Выбрать файл</button>
                 </div>
@@ -679,6 +714,12 @@
                     <div class="preview-title">Предпросмотр:</div>
                     <img id="screenshot-preview" src="" alt="Превью скриншота">
                 </div>
+                
+                <div class="progress-bar" id="progress-bar" style="display: none;">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                </div>
+                
+                <div id="status-message"></div>
                 
                 <div class="manual-input">
                     <h3>Или введите данные вручную:</h3>
@@ -796,6 +837,61 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="results-section tab-content" id="stats-tab">
+                <h2 class="section-title">Статистика матча</h2>
+                
+                <div class="analysis-result">
+                    <h3>Ключевые показатели</h3>
+                    
+                    <div class="result-grid">
+                        <div class="result-card">
+                            <div class="result-title">Текущий темп игры</div>
+                            <div class="result-value neutral" id="current-pace">--</div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <div class="result-title">Средний темп лиги</div>
+                            <div class="result-value neutral" id="league-pace">--</div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <div class="result-title">Прогресс матча</div>
+                            <div class="result-value neutral" id="match-progress">--</div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <div class="result-title">Эффективность атаки</div>
+                            <div class="result-value neutral" id="offensive-efficiency">--</div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-grid" style="grid-template-columns: 1fr 1fr; margin-top: 15px;">
+                        <div class="result-card">
+                            <div class="result-title">Команда 1 (PPG)</div>
+                            <div class="result-value neutral" id="team1-ppg">--</div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <div class="result-title">Команда 2 (PPG)</div>
+                            <div class="result-value neutral" id="team2-ppg">--</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="recommendation">
+                    <div class="recommendation-title">Анализ тотала</div>
+                    <div class="recommendation-desc" id="total-analysis">Загрузите скриншот для анализа</div>
+                    
+                    <div class="confidence">
+                        <span class="confidence-text">Точность анализа:</span>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="analysis-confidence-bar" style="width: 0%"></div>
+                        </div>
+                        <span id="analysis-confidence-value" style="margin-left: 8px;">0%</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -838,10 +934,13 @@
             const tabs = document.querySelectorAll('.tab');
             const tabContents = document.querySelectorAll('.tab-content');
             const totalTypeSelect = document.getElementById('manual-total-type');
+            const progressBar = document.getElementById('progress-bar');
+            const progressFill = document.getElementById('progress-fill');
+            const statusMessage = document.getElementById('status-message');
             
             let activeInput = null;
             let isDarkTheme = localStorage.getItem('darkTheme') === 'true';
-            let totalType = 'over'; // По умолчанию ТБ
+            let totalType = 'over';
             
             // Apply saved theme
             if (isDarkTheme) {
@@ -1026,7 +1125,19 @@
                 document.getElementById('confidence-bar').style.width = '0%';
                 document.getElementById('confidence-value').textContent = '0%';
                 
+                document.getElementById('current-pace').textContent = '--';
+                document.getElementById('league-pace').textContent = '--';
+                document.getElementById('match-progress').textContent = '--';
+                document.getElementById('offensive-efficiency').textContent = '--';
+                document.getElementById('team1-ppg').textContent = '--';
+                document.getElementById('team2-ppg').textContent = '--';
+                document.getElementById('total-analysis').textContent = 'Загрузите скриншот для анализа';
+                document.getElementById('analysis-confidence-bar').style.width = '0%';
+                document.getElementById('analysis-confidence-value').textContent = '0%';
+                
                 previewImg.style.display = 'none';
+                progressBar.style.display = 'none';
+                statusMessage.innerHTML = '';
             });
             
             // Theme toggle functionality
@@ -1078,6 +1189,15 @@
                 processManualInput();
             });
             
+            function showStatus(message, type) {
+                statusMessage.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+            }
+            
+            function updateProgress(percent) {
+                progressBar.style.display = 'block';
+                progressFill.style.width = `${percent}%`;
+            }
+            
             function processImage(file) {
                 const reader = new FileReader();
                 
@@ -1094,6 +1214,9 @@
                     document.getElementById('ocr-total-type').innerHTML = '<span class="loading"></span>';
                     document.getElementById('ocr-handicap').innerHTML = '<span class="loading"></span>';
                     
+                    showStatus('Начинаем распознавание текста...', 'success');
+                    updateProgress(10);
+                    
                     // Запускаем распознавание текста с помощью Tesseract
                     Tesseract.recognize(
                         file,
@@ -1101,14 +1224,26 @@
                         { 
                             logger: m => {
                                 if (m.status === 'recognizing text') {
+                                    const progress = Math.round(m.progress * 100);
+                                    updateProgress(10 + progress * 0.8);
                                     debugInfo.style.display = 'block';
-                                    debugText.innerHTML += `Распознавание: ${Math.round(m.progress * 100)}%<br>`;
+                                    debugText.innerHTML += `Распознавание: ${progress}%<br>`;
                                 }
                             }
                         }
                     ).then(({ data: { text } }) => {
+                        updateProgress(95);
                         debugText.innerHTML += `Распознанный текст:<br><textarea rows="5" style="width:100%">${text}</textarea><br>`;
+                        showStatus('Текст распознан, анализируем данные...', 'success');
                         processOCRText(text);
+                        updateProgress(100);
+                        setTimeout(() => {
+                            progressBar.style.display = 'none';
+                            showStatus('Анализ завершен!', 'success');
+                        }, 500);
+                    }).catch(err => {
+                        showStatus('Ошибка при распознавании текста: ' + err.message, 'error');
+                        updateProgress(0);
                     });
                 };
                 
@@ -1118,8 +1253,15 @@
             function processOCRText(text) {
                 // Улучшенные регулярные выражения для распознавания данных
                 const scoreRegex = /(\d+)[\s\S]{0,50}?(\d+)\s*$/m;
-                const periodRegex = /(\d+)-я четверть/i;
-                const timeRegex = /(\d{1,2}:\d{2})\s*[|]/;
+                
+                // Улучшенное регулярное выражение для четверти и времени
+                // Формат: xx:xx (время начала игры | x-я четверть, xx:xx)
+                const periodTimeRegex = /(\d{1,2}:\d{2})\s*[\(].*?[|]\s*(\d+)-я четверть\s*,\s*(\d{1,2}:\d{2})[\)]/i;
+                
+                // Альтернативные варианты для четверти и времени
+                const alternativePeriodTimeRegex = /(\d+)-я четверть\s*[,\s]*(\d{1,2}:\d{2})/i;
+                const simplePeriodRegex = /(\d+)-я четверть/i;
+                const simpleTimeRegex = /(\d{1,2}:\d{2})\s*[|]/;
                 
                 // Улучшенное регулярное выражение для тотала с учетом ТМ в скобках
                 const totalRegex = /Т[М]\s*[\(]?\s*([\d.,]+)\s*[\)]?/i;
@@ -1131,8 +1273,18 @@
                 
                 // Извлекаем данные
                 const scoreMatch = text.match(scoreRegex);
-                const periodMatch = text.match(periodRegex);
-                const timeMatch = text.match(timeRegex);
+                let periodTimeMatch = text.match(periodTimeRegex);
+                let periodMatch, timeMatch;
+                
+                // Если не нашли сложный формат, ищем альтернативные
+                if (!periodTimeMatch) {
+                    periodTimeMatch = text.match(alternativePeriodTimeRegex);
+                    if (!periodTimeMatch) {
+                        periodMatch = text.match(simplePeriodRegex);
+                        timeMatch = text.match(simpleTimeRegex);
+                    }
+                }
+                
                 let totalMatch = text.match(totalRegex);
                 let handicapMatch = text.match(handicapRegex);
                 
@@ -1140,7 +1292,7 @@
                 if (!totalMatch) totalMatch = text.match(alternativeTotalRegex);
                 if (!handicapMatch) handicapMatch = text.match(alternativeHandicapRegex);
                 
-                debugText.innerHTML += `Найдены данные: счет=${scoreMatch ? 'да' : 'нет'}, четверть=${periodMatch ? 'да' : 'нет'}, время=${timeMatch ? 'да' : 'нет'}<br>`;
+                debugText.innerHTML += `Найдены данные: счет=${scoreMatch ? 'да' : 'нет'}, четверть/время=${periodTimeMatch ? 'да' : 'нет'}<br>`;
                 
                 let score1 = 0, score2 = 0, period = 1, timeElapsed = "00:00", total = 0, handicap = 0;
                 let detectedTotalType = "under"; // По умолчанию ТМ, так как пользователь указал, что тотал обозначен как ТМ
@@ -1164,16 +1316,21 @@
                     document.getElementById('manual-score').value = `${score1}:${score2}`;
                 }
                 
-                // Обрабатываем период
-                if (periodMatch) {
-                    period = parseInt(periodMatch[1]);
+                // Обрабатываем период и время
+                if (periodTimeMatch) {
+                    // Формат: xx:xx (время начала игры | x-я четверть, xx:xx)
+                    if (periodTimeMatch.length >= 4) {
+                        // Сложный формат с временем начала игры
+                        period = parseInt(periodTimeMatch[2]);
+                        timeElapsed = periodTimeMatch[3];
+                    } else {
+                        // Простой формат: x-я четверть, xx:xx
+                        period = parseInt(periodTimeMatch[1]);
+                        timeElapsed = periodTimeMatch[2];
+                    }
+                    
                     document.getElementById('ocr-period').textContent = `${period} четверть`;
                     document.getElementById('manual-period').value = period;
-                }
-                
-                // Обрабатываем время
-                if (timeMatch) {
-                    timeElapsed = timeMatch[1];
                     document.getElementById('ocr-time').textContent = timeElapsed;
                     document.getElementById('manual-time').value = timeElapsed;
                     
@@ -1189,6 +1346,32 @@
                     
                     const timeRemainingFormatted = `${minutesRemaining}:${secondsRemaining.toString().padStart(2, '0')}`;
                     document.getElementById('ocr-time-remaining').textContent = timeRemainingFormatted;
+                } else if (periodMatch || timeMatch) {
+                    // Если нашли отдельно четверть и время
+                    if (periodMatch) {
+                        period = parseInt(periodMatch[1]);
+                        document.getElementById('ocr-period').textContent = `${period} четверть`;
+                        document.getElementById('manual-period').value = period;
+                    }
+                    
+                    if (timeMatch) {
+                        timeElapsed = timeMatch[1];
+                        document.getElementById('ocr-time').textContent = timeElapsed;
+                        document.getElementById('manual-time').value = timeElapsed;
+                        
+                        // Рассчитываем оставшееся время
+                        const periodLength = parseInt(leagueSelect.value);
+                        const [minutesElapsed, secondsElapsed] = timeElapsed.split(':').map(Number);
+                        const totalSecondsElapsed = minutesElapsed * 60 + secondsElapsed;
+                        const totalSecondsInPeriod = periodLength * 60;
+                        const totalSecondsRemaining = totalSecondsInPeriod - totalSecondsElapsed;
+                        
+                        const minutesRemaining = Math.floor(totalSecondsRemaining / 60);
+                        const secondsRemaining = totalSecondsRemaining % 60;
+                        
+                        const timeRemainingFormatted = `${minutesRemaining}:${secondsRemaining.toString().padStart(2, '0')}`;
+                        document.getElementById('ocr-time-remaining').textContent = timeRemainingFormatted;
+                    }
                 }
                 
                 // Обрабатываем тотал
@@ -1222,6 +1405,9 @@
                 
                 // Генерируем прогноз
                 generatePredictions(score1, score2, period, timeElapsed, total, handicap, detectedTotalType);
+                
+                // Обновляем статистику
+                updateStatistics(score1, score2, period, timeElapsed, total, handicap, detectedTotalType);
             }
             
             function processManualInput() {
@@ -1273,6 +1459,9 @@
                 
                 // Генерируем прогноз
                 generatePredictions(score1, score2, periodInput, timeInput, totalInput, handicapInput, totalTypeInput);
+                
+                // Обновляем статистику
+                updateStatistics(score1, score2, periodInput, timeInput, totalInput, handicapInput, totalTypeInput);
             }
             
             function generatePredictions(score1, score2, period, timeElapsed, totalLine, handicapLine, totalType) {
@@ -1359,6 +1548,80 @@
                 
                 debugText.innerHTML += `Прогноз: тотал=${Math.round(predictedTotalPoints)}, счет=${Math.round(predictedScore1)}:${Math.round(predictedScore2)}<br>`;
                 debugText.innerHTML += `Рекомендация: ${recommendation}<br>`;
+            }
+            
+            function updateStatistics(score1, score2, period, timeElapsed, totalLine, handicapLine, totalType) {
+                const periodLength = parseInt(leagueSelect.value);
+                const totalPeriods = 4;
+                
+                // Парсим прошедшее время в четверти
+                const [minutesElapsed, secondsElapsed] = timeElapsed.split(':').map(Number);
+                const totalSecondsElapsed = minutesElapsed * 60 + secondsElapsed;
+                const totalSecondsInPeriod = periodLength * 60;
+                
+                // Расчет прошедшего и оставшегося времени в матче
+                const totalSecondsPlayed = (period - 1) * totalSecondsInPeriod + totalSecondsElapsed;
+                const totalSecondsInGame = totalPeriods * totalSecondsInPeriod;
+                
+                // Расчет текущего темпа игры (очков в минуту)
+                const totalPoints = score1 + score2;
+                const minutesPlayed = totalSecondsPlayed / 60;
+                const pointsPerMinute = minutesPlayed > 0 ? totalPoints / minutesPlayed : 0;
+                
+                // Прогресс матча в процентах
+                const matchProgress = Math.round((totalSecondsPlayed / totalSecondsInGame) * 100);
+                
+                // Статистика лиги (условные значения)
+                let leaguePace;
+                switch(leagueSelect.value) {
+                    case '10': leaguePace = 1.65; break; // Евролига, ВТБ
+                    case '12': leaguePace = 2.15; break; // NBA
+                    default: leaguePace = 1.8; // NCAA
+                }
+                
+                // Эффективность атаки (условный расчет)
+                const offensiveEfficiency = (pointsPerMinute / leaguePace * 100).toFixed(1);
+                
+                // PPG (Points Per Game) для команд
+                const team1Ppg = (score1 / minutesPlayed * 40).toFixed(1);
+                const team2Ppg = (score2 / minutesPlayed * 40).toFixed(1);
+                
+                // Анализ тотала
+                let totalAnalysis = "";
+                let analysisConfidence = 0;
+                
+                if (totalLine) {
+                    const predictedTotal = totalPoints + (pointsPerMinute * (totalSecondsInGame - totalSecondsPlayed) / 60);
+                    
+                    if (totalType === 'over') {
+                        if (predictedTotal > totalLine) {
+                            totalAnalysis = `Текущий темп игры (${pointsPerMinute.toFixed(2)} очков/мин) поддерживает ТБ ${totalLine}.`;
+                            analysisConfidence = 75;
+                        } else {
+                            totalAnalysis = `Текущий темп игры (${pointsPerMinute.toFixed(2)} очков/мин) НЕ поддерживает ТБ ${totalLine}.`;
+                            analysisConfidence = 65;
+                        }
+                    } else {
+                        if (predictedTotal < totalLine) {
+                            totalAnalysis = `Текущий темп игры (${pointsPerMinute.toFixed(2)} очков/мин) поддерживает ТМ ${totalLine}.`;
+                            analysisConfidence = 75;
+                        } else {
+                            totalAnalysis = `Текущий темп игры (${pointsPerMinute.toFixed(2)} очков/мин) НЕ поддерживает ТМ ${totalLine}.`;
+                            analysisConfidence = 65;
+                        }
+                    }
+                }
+                
+                // Обновляем статистику
+                document.getElementById('current-pace').textContent = pointsPerMinute.toFixed(2);
+                document.getElementById('league-pace').textContent = leaguePace.toFixed(2);
+                document.getElementById('match-progress').textContent = matchProgress + "%";
+                document.getElementById('offensive-efficiency').textContent = offensiveEfficiency + "%";
+                document.getElementById('team1-ppg').textContent = team1Ppg;
+                document.getElementById('team2-ppg').textContent = team2Ppg;
+                document.getElementById('total-analysis').textContent = totalAnalysis;
+                document.getElementById('analysis-confidence-bar').style.width = `${analysisConfidence}%`;
+                document.getElementById('analysis-confidence-value').textContent = `${analysisConfidence}%`;
             }
         });
     </script>
