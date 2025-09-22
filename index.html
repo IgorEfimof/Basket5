@@ -100,6 +100,11 @@
             align-items: center;
             justify-content: center;
             font-size: 1.2rem;
+            transition: transform 0.3s;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
         }
         
         .main-content {
@@ -148,6 +153,12 @@
         
         .upload-area:hover {
             background-color: rgba(26, 115, 232, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .upload-area.drag-over {
+            background-color: rgba(26, 115, 232, 0.2);
+            transform: scale(1.02);
         }
         
         .upload-icon {
@@ -169,11 +180,12 @@
             border-radius: 5px;
             font-size: 1rem;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s;
         }
         
         .upload-btn:hover {
             background: #0d5bba;
+            transform: translateY(-2px);
         }
         
         .preview-container {
@@ -244,6 +256,11 @@
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-5px);
         }
         
         .result-title {
@@ -312,6 +329,7 @@
             height: 100%;
             background: white;
             border-radius: 5px;
+            transition: width 0.5s ease;
         }
         
         .championship-selector {
@@ -338,6 +356,7 @@
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
+            cursor: pointer;
         }
         
         .debug-info {
@@ -371,12 +390,19 @@
         
         .input-field {
             width: 100%;
-            padding: 8px;
+            padding: 12px;
             border-radius: 5px;
             border: 1px solid #ddd;
             background: var(--input-bg);
             color: var(--input-color);
-            font-size: 16px; /* Prevents zoom on iOS */
+            font-size: 16px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .input-field:focus {
+            border-color: var(--primary-color);
+            outline: none;
         }
         
         /* Custom Keyboard */
@@ -390,6 +416,12 @@
             box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
             display: none;
             z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .custom-keyboard.visible {
+            display: block;
+            transform: translateY(0);
         }
         
         .keyboard-row {
@@ -411,10 +443,49 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .keyboard-key:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: scale(1.05);
         }
         
         .keyboard-key-wide {
             width: 120px;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: var(--card-bg);
+            border: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--text-color);
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
         }
         
         /* Media Queries for Responsiveness */
@@ -489,6 +560,15 @@
             .keyboard-key-wide {
                 width: 86px;
             }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                margin-bottom: 5px;
+                border-radius: 5px;
+            }
         }
         
         /* iPad Split Screen Support */
@@ -536,8 +616,13 @@
             <button class="theme-toggle" id="theme-toggle">🌙</button>
         </header>
         
+        <div class="tabs">
+            <button class="tab active" data-tab="upload">Загрузка данных</button>
+            <button class="tab" data-tab="results">Результаты анализа</button>
+        </div>
+        
         <div class="main-content">
-            <div class="upload-section">
+            <div class="upload-section tab-content active" id="upload-tab">
                 <h2 class="section-title">Загрузка данных</h2>
                 
                 <div class="championship-selector">
@@ -569,23 +654,23 @@
                     <h3>Или введите данные вручную:</h3>
                     <div class="input-group">
                         <label class="input-label">Текущий счет (Команда 1 : Команда 2)</label>
-                        <input type="text" class="input-field" id="manual-score" placeholder="Например: 100:92" readonly>
+                        <input type="text" class="input-field" id="manual-score" placeholder="Например: 100:92">
                     </div>
                     <div class="input-group">
                         <label class="input-label">Текущая четверть</label>
-                        <input type="number" class="input-field" id="manual-period" placeholder="1-4" min="1" max="4" readonly>
+                        <input type="number" class="input-field" id="manual-period" placeholder="1-4" min="1" max="4">
                     </div>
                     <div class="input-group">
                         <label class="input-label">Прошедшее время в четверти (мин:сек)</label>
-                        <input type="text" class="input-field" id="manual-time" placeholder="Например: 01:27" readonly>
+                        <input type="text" class="input-field" id="manual-time" placeholder="Например: 01:27">
                     </div>
                     <div class="input-group">
                         <label class="input-label">Тотал букмекера</label>
-                        <input type="number" class="input-field" id="manual-total" placeholder="Например: 237.5" step="0.5" readonly>
+                        <input type="number" class="input-field" id="manual-total" placeholder="Например: 237.5" step="0.5">
                     </div>
                     <div class="input-group">
                         <label class="input-label">Фора букмекера</label>
-                        <input type="number" class="input-field" id="manual-handicap" placeholder="Например: -6.5" step="0.5" readonly>
+                        <input type="number" class="input-field" id="manual-handicap" placeholder="Например: -6.5" step="0.5">
                     </div>
                     <button class="upload-btn" id="manual-submit" style="width: 100%;">Рассчитать</button>
                 </div>
@@ -624,7 +709,7 @@
                 </div>
             </div>
             
-            <div class="results-section">
+            <div class="results-section tab-content" id="results-tab">
                 <h2 class="section-title">Результаты анализа</h2>
                 
                 <div class="analysis-result">
@@ -693,7 +778,7 @@
             <button class="keyboard-key" data-value="+" data-for="handicap">+</button>
             <button class="keyboard-key" data-value="-" data-for="handicap">-</button>
             <button class="keyboard-key" data-action="backspace"><i class="fas fa-backspace"></i></button>
-            <button class="keyboard-key" data-action="close">Готово</button>
+            <button class="keyboard-key keyboard-key-wide" data-action="close">Готово</button>
         </div>
     </div>
 
@@ -710,9 +795,32 @@
             const themeToggle = document.getElementById('theme-toggle');
             const customKeyboard = document.getElementById('custom-keyboard');
             const manualInputs = document.querySelectorAll('.input-field');
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
             
             let activeInput = null;
-            let isDarkTheme = false;
+            let isDarkTheme = localStorage.getItem('darkTheme') === 'true';
+            
+            // Apply saved theme
+            if (isDarkTheme) {
+                document.body.setAttribute('data-theme', 'dark');
+                themeToggle.textContent = '☀️';
+            }
+            
+            // Tab functionality
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    // Deactivate all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(tc => tc.classList.remove('active'));
+                    
+                    // Activate current tab
+                    tab.classList.add('active');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
             
             // Prevent zoom on double tap
             document.addEventListener('dblclick', function(e) {
@@ -736,13 +844,14 @@
                     document.body.removeAttribute('data-theme');
                     themeToggle.textContent = '🌙';
                 }
+                localStorage.setItem('darkTheme', isDarkTheme);
             });
             
             // Custom keyboard functionality
             manualInputs.forEach(input => {
                 input.addEventListener('focus', function() {
                     activeInput = this;
-                    customKeyboard.style.display = 'block';
+                    customKeyboard.classList.add('visible');
                     
                     // Show/hide special keys based on input type
                     const specialKeys = document.querySelectorAll('[data-for]');
@@ -764,7 +873,7 @@
                     if (action === 'backspace') {
                         activeInput.value = activeInput.value.slice(0, -1);
                     } else if (action === 'close') {
-                        customKeyboard.style.display = 'none';
+                        customKeyboard.classList.remove('visible');
                         activeInput.blur();
                         activeInput = null;
                     } else if (value) {
@@ -776,7 +885,7 @@
             // Close keyboard when clicking outside
             document.addEventListener('click', function(e) {
                 if (!e.target.closest('.custom-keyboard') && !e.target.closest('.input-field')) {
-                    customKeyboard.style.display = 'none';
+                    customKeyboard.classList.remove('visible');
                     if (activeInput) {
                         activeInput.blur();
                         activeInput = null;
@@ -793,16 +902,16 @@
             
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                uploadArea.style.backgroundColor = 'rgba(26, 115, 232, 0.2)';
+                uploadArea.classList.add('drag-over');
             });
             
-            uploadArea.addEventListener('dragleave', () {
-                uploadArea.style.backgroundColor = '';
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('drag-over');
             });
             
             uploadArea.addEventListener('drop', (e) => {
                 e.preventDefault();
-                uploadArea.style.backgroundColor = '';
+                uploadArea.classList.remove('drag-over');
                 
                 if (e.dataTransfer.files.length) {
                     processImage(e.dataTransfer.files[0]);
@@ -943,6 +1052,12 @@
                     document.getElementById('manual-handicap').value = handicap;
                 }
                 
+                // Переключаемся на вкладку результатов
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(tc => tc.classList.remove('active'));
+                document.querySelector('[data-tab="results"]').classList.add('active');
+                document.getElementById('results-tab').classList.add('active');
+                
                 // Генерируем прогноз
                 generatePredictions(score1, score2, period, timeElapsed, total, handicap);
             }
@@ -980,6 +1095,12 @@
                 
                 document.getElementById('ocr-total').textContent = totalInput || '--';
                 document.getElementById('ocr-handicap').textContent = handicapInput || '--';
+                
+                // Переключаемся на вкладку результатов
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(tc => tc.classList.remove('active'));
+                document.querySelector('[data-tab="results"]').classList.add('active');
+                document.getElementById('results-tab').classList.add('active');
                 
                 // Генерируем прогноз
                 generatePredictions(score1, score2, periodInput, timeInput, totalInput, handicapInput);
