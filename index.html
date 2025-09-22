@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Точный анализ баскетбольных ставок</title>
+    <title>Анализатор ставок TT PRO v2.1</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -20,29 +20,29 @@
         }
         
         :root {
-            --primary-color: #1a73e8;
-            --secondary-color: #ff6d00;
-            --background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            --primary-color: #2c3e50;
+            --secondary-color: #e74c3c;
+            --background: linear-gradient(135deg, #1a2a6c, #2c3e50, #4a235a);
             --container-bg: rgba(255, 255, 255, 0.95);
-            --text-color: #333;
+            --text-color: #2c3e50;
             --card-bg: rgba(255, 255, 255, 0.9);
             --input-bg: rgba(255, 255, 255, 0.95);
-            --input-color: #333;
+            --input-color: #2c3e50;
             --stats-bg: rgba(240, 240, 240, 0.9);
-            --positive-color: #4caf50;
-            --negative-color: #f44336;
-            --neutral-color: #2196f3;
+            --positive-color: #27ae60;
+            --negative-color: #e74c3c;
+            --neutral-color: #3498db;
         }
         
         [data-theme="dark"] {
-            --primary-color: #4a8eff;
-            --secondary-color: #ff944d;
-            --background: linear-gradient(135deg, #0d1b45, #611c1c, #c2951d);
+            --primary-color: #3498db;
+            --secondary-color: #e74c3c;
+            --background: linear-gradient(135deg, #0d1b45, #2c3e50, #3d1e4a);
             --container-bg: rgba(40, 40, 40, 0.95);
-            --text-color: #f0f0f0;
+            --text-color: #ecf0f1;
             --card-bg: rgba(60, 60, 60, 0.9);
             --input-bg: rgba(50, 50, 50, 0.95);
-            --input-color: #f0f0f0;
+            --input-color: #ecf0f1;
             --stats-bg: rgba(30, 30, 30, 0.9);
         }
         
@@ -62,7 +62,7 @@
             max-width: 1200px;
             background: var(--container-bg);
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             overflow: hidden;
             transition: all 0.3s ease;
         }
@@ -152,12 +152,12 @@
         }
         
         .upload-area:hover {
-            background-color: rgba(26, 115, 232, 0.1);
+            background-color: rgba(44, 62, 80, 0.1);
             transform: translateY(-2px);
         }
         
         .upload-area.drag-over {
-            background-color: rgba(26, 115, 232, 0.2);
+            background-color: rgba(44, 62, 80, 0.2);
             transform: scale(1.02);
         }
         
@@ -184,7 +184,7 @@
         }
         
         .upload-btn:hover {
-            background: #0d5bba;
+            background: #1c2833;
             transform: translateY(-2px);
         }
         
@@ -249,6 +249,7 @@
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
             margin-top: 15px;
+            margin-bottom: 20px;
         }
         
         .result-card {
@@ -290,7 +291,7 @@
         .recommendation {
             margin-top: 25px;
             padding: 20px;
-            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            background: linear-gradient(90deg, var(--positive-color), #2ecc71);
             color: white;
             border-radius: 10px;
             text-align: center;
@@ -398,6 +399,7 @@
             font-size: 16px;
             cursor: pointer;
             transition: border-color 0.3s;
+            caret-color: transparent;
         }
         
         .input-field:focus {
@@ -412,8 +414,8 @@
             left: 0;
             width: 100%;
             background: var(--card-bg);
-            padding: 10px;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.3);
             display: none;
             z-index: 1000;
             transition: transform 0.3s ease;
@@ -424,21 +426,21 @@
             transform: translateY(0);
         }
         
-        .keyboard-row {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 10px;
+        .keyboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 400px;
+            margin: 0 auto;
         }
         
         .keyboard-key {
-            width: 60px;
             height: 60px;
-            margin: 5px;
             font-size: 1.5rem;
             background: var(--input-bg);
             color: var(--input-color);
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -453,7 +455,16 @@
         }
         
         .keyboard-key-wide {
-            width: 120px;
+            grid-column: span 2;
+        }
+        
+        .keyboard-action {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .keyboard-action:hover {
+            background: var(--secondary-color);
         }
         
         /* Tabs */
@@ -488,6 +499,43 @@
             display: block;
         }
         
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .analyze-btn {
+            background: var(--positive-color);
+            color: white;
+        }
+        
+        .analyze-btn:hover {
+            background: #219653;
+            transform: translateY(-2px);
+        }
+        
+        .clear-btn {
+            background: var(--negative-color);
+            color: white;
+        }
+        
+        .clear-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+        
         /* Media Queries for Responsiveness */
         @media (max-width: 900px) {
             .main-content {
@@ -507,13 +555,8 @@
             }
             
             .keyboard-key {
-                width: 50px;
                 height: 50px;
                 font-size: 1.2rem;
-            }
-            
-            .keyboard-key-wide {
-                width: 100px;
             }
         }
         
@@ -551,14 +594,8 @@
             }
             
             .keyboard-key {
-                width: 40px;
-                height: 40px;
+                height: 45px;
                 font-size: 1rem;
-                margin: 3px;
-            }
-            
-            .keyboard-key-wide {
-                width: 86px;
             }
             
             .tabs {
@@ -568,6 +605,10 @@
             .tab {
                 margin-bottom: 5px;
                 border-radius: 5px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
             }
         }
         
@@ -611,8 +652,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>Точный анализ баскетбольных ставок</h1>
-            <div class="subtitle">Анализ на основе OCR-распознавания и математических моделей</div>
+            <h1>Анализатор ставок TT PRO v2.1</h1>
+            <div class="subtitle">Точный анализ на основе OCR-распознавания</div>
             <button class="theme-toggle" id="theme-toggle">🌙</button>
         </header>
         
@@ -654,25 +695,29 @@
                     <h3>Или введите данные вручную:</h3>
                     <div class="input-group">
                         <label class="input-label">Текущий счет (Команда 1 : Команда 2)</label>
-                        <input type="text" class="input-field" id="manual-score" placeholder="Например: 100:92">
+                        <input type="text" class="input-field" id="manual-score" placeholder="Например: 100:92" readonly>
                     </div>
                     <div class="input-group">
                         <label class="input-label">Текущая четверть</label>
-                        <input type="number" class="input-field" id="manual-period" placeholder="1-4" min="1" max="4">
+                        <input type="number" class="input-field" id="manual-period" placeholder="1-4" min="1" max="4" readonly>
                     </div>
                     <div class="input-group">
                         <label class="input-label">Прошедшее время в четверти (мин:сек)</label>
-                        <input type="text" class="input-field" id="manual-time" placeholder="Например: 01:27">
+                        <input type="text" class="input-field" id="manual-time" placeholder="Например: 01:27" readonly>
                     </div>
                     <div class="input-group">
                         <label class="input-label">Тотал букмекера</label>
-                        <input type="number" class="input-field" id="manual-total" placeholder="Например: 237.5" step="0.5">
+                        <input type="number" class="input-field" id="manual-total" placeholder="Например: 237.5" step="0.5" readonly>
                     </div>
                     <div class="input-group">
                         <label class="input-label">Фора букмекера</label>
-                        <input type="number" class="input-field" id="manual-handicap" placeholder="Например: -6.5" step="0.5">
+                        <input type="number" class="input-field" id="manual-handicap" placeholder="Например: -6.5" step="0.5" readonly>
                     </div>
-                    <button class="upload-btn" id="manual-submit" style="width: 100%;">Рассчитать</button>
+                    
+                    <div class="action-buttons">
+                        <button class="action-btn analyze-btn" id="manual-submit">Анализировать</button>
+                        <button class="action-btn clear-btn" id="clear-btn">Очистить</button>
+                    </div>
                 </div>
                 
                 <div class="ocr-results">
@@ -756,29 +801,20 @@
 
     <!-- Custom Keyboard -->
     <div class="custom-keyboard" id="custom-keyboard">
-        <div class="keyboard-row">
+        <div class="keyboard-grid">
             <button class="keyboard-key" data-value="1">1</button>
             <button class="keyboard-key" data-value="2">2</button>
             <button class="keyboard-key" data-value="3">3</button>
-            <button class="keyboard-key" data-value=":" data-for="score">:</button>
-        </div>
-        <div class="keyboard-row">
+            <button class="keyboard-key keyboard-action" data-action="backspace">✅</button>
             <button class="keyboard-key" data-value="4">4</button>
             <button class="keyboard-key" data-value="5">5</button>
             <button class="keyboard-key" data-value="6">6</button>
-            <button class="keyboard-key" data-value="." data-for="total">.</button>
-        </div>
-        <div class="keyboard-row">
+            <button class="keyboard-key" data-value=".">.</button>
             <button class="keyboard-key" data-value="7">7</button>
             <button class="keyboard-key" data-value="8">8</button>
             <button class="keyboard-key" data-value="9">9</button>
             <button class="keyboard-key" data-value="0">0</button>
-        </div>
-        <div class="keyboard-row">
-            <button class="keyboard-key" data-value="+" data-for="handicap">+</button>
-            <button class="keyboard-key" data-value="-" data-for="handicap">-</button>
-            <button class="keyboard-key" data-action="backspace"><i class="fas fa-backspace"></i></button>
-            <button class="keyboard-key keyboard-key-wide" data-action="close">Готово</button>
+            <button class="keyboard-key keyboard-key-wide keyboard-action" data-action="close">Готово</button>
         </div>
     </div>
 
@@ -792,6 +828,7 @@
             const debugInfo = document.getElementById('debug-info');
             const debugText = document.getElementById('debug-text');
             const manualSubmit = document.getElementById('manual-submit');
+            const clearBtn = document.getElementById('clear-btn');
             const themeToggle = document.getElementById('theme-toggle');
             const customKeyboard = document.getElementById('custom-keyboard');
             const manualInputs = document.querySelectorAll('.input-field');
@@ -822,45 +859,38 @@
                 });
             });
             
-            // Prevent zoom on double tap
-            document.addEventListener('dblclick', function(e) {
-                e.preventDefault();
-            }, { passive: false });
-            
-            // Prevent zoom on double tap on iOS
-            document.addEventListener('touchstart', function(e) {
-                if (e.touches.length > 1) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
-            
-            // Theme toggle functionality
-            themeToggle.addEventListener('click', function() {
-                isDarkTheme = !isDarkTheme;
-                if (isDarkTheme) {
-                    document.body.setAttribute('data-theme', 'dark');
-                    themeToggle.textContent = '☀️';
-                } else {
-                    document.body.removeAttribute('data-theme');
-                    themeToggle.textContent = '🌙';
-                }
-                localStorage.setItem('darkTheme', isDarkTheme);
-            });
-            
-            // Custom keyboard functionality
+            // Prevent default behavior for input fields to avoid system keyboard
             manualInputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    activeInput = this;
-                    customKeyboard.classList.add('visible');
-                    
-                    // Show/hide special keys based on input type
-                    const specialKeys = document.querySelectorAll('[data-for]');
-                    specialKeys.forEach(key => {
-                        const forInput = key.getAttribute('data-for');
-                        key.style.display = forInput === this.id.replace('manual-', '') ? 'flex' : 'none';
-                    });
+                input.addEventListener('focus', (e) => {
+                    e.preventDefault();
+                    showCustomKeyboard();
+                    activeInput = input;
+                });
+                
+                input.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showCustomKeyboard();
+                    activeInput = input;
+                });
+                
+                // Prevent touch events from triggering system keyboard
+                input.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    showCustomKeyboard();
+                    activeInput = input;
                 });
             });
+            
+            // Function to show custom keyboard
+            function showCustomKeyboard() {
+                customKeyboard.classList.add('visible');
+            }
+            
+            // Function to hide custom keyboard
+            function hideCustomKeyboard() {
+                customKeyboard.classList.remove('visible');
+                activeInput = null;
+            }
             
             // Keyboard button clicks
             document.querySelectorAll('.keyboard-key').forEach(key => {
@@ -873,9 +903,7 @@
                     if (action === 'backspace') {
                         activeInput.value = activeInput.value.slice(0, -1);
                     } else if (action === 'close') {
-                        customKeyboard.classList.remove('visible');
-                        activeInput.blur();
-                        activeInput = null;
+                        hideCustomKeyboard();
                     } else if (value) {
                         activeInput.value += value;
                     }
@@ -885,12 +913,46 @@
             // Close keyboard when clicking outside
             document.addEventListener('click', function(e) {
                 if (!e.target.closest('.custom-keyboard') && !e.target.closest('.input-field')) {
-                    customKeyboard.classList.remove('visible');
-                    if (activeInput) {
-                        activeInput.blur();
-                        activeInput = null;
-                    }
+                    hideCustomKeyboard();
                 }
+            });
+            
+            // Clear button functionality
+            clearBtn.addEventListener('click', () => {
+                manualInputs.forEach(input => {
+                    input.value = '';
+                });
+                
+                document.getElementById('ocr-score').textContent = '--';
+                document.getElementById('ocr-period').textContent = '--';
+                document.getElementById('ocr-time').textContent = '--';
+                document.getElementById('ocr-time-remaining').textContent = '--';
+                document.getElementById('ocr-total').textContent = '--';
+                document.getElementById('ocr-handicap').textContent = '--';
+                
+                document.getElementById('predicted-total').textContent = '--';
+                document.getElementById('predicted-pace').textContent = '--';
+                document.getElementById('predicted-score').textContent = '--';
+                document.getElementById('overtime-probability').textContent = '--';
+                
+                document.getElementById('recommendation-text').textContent = 'Загрузите скриншот или введите данные для получения рекомендации';
+                document.getElementById('confidence-bar').style.width = '0%';
+                document.getElementById('confidence-value').textContent = '0%';
+                
+                previewImg.style.display = 'none';
+            });
+            
+            // Theme toggle functionality
+            themeToggle.addEventListener('click', function() {
+                isDarkTheme = !isDarkTheme;
+                if (isDarkTheme) {
+                    document.body.setAttribute('data-theme', 'dark');
+                    themeToggle.textContent = '☀️';
+                } else {
+                    document.body.removeAttribute('data-theme');
+                    themeToggle.textContent = '🌙';
+                }
+                localStorage.setItem('darkTheme', isDarkTheme);
             });
             
             // Обработчики для загрузки изображения
