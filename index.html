@@ -55,6 +55,9 @@
             justify-content: center;
             align-items: center;
             transition: background 0.3s ease;
+            touch-action: manipulation;
+            -webkit-text-size-adjust: none;
+            text-size-adjust: none;
         }
         
         .container {
@@ -312,6 +315,7 @@
             align-items: center;
             justify-content: center;
             margin-top: 10px;
+            flex-wrap: wrap;
         }
         
         .confidence-text {
@@ -419,6 +423,7 @@
             display: none;
             z-index: 1000;
             transition: transform 0.3s ease;
+            touch-action: manipulation;
         }
         
         .custom-keyboard.visible {
@@ -446,6 +451,9 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
         }
         
         .keyboard-key:hover {
@@ -609,6 +617,11 @@
             
             .action-buttons {
                 flex-direction: column;
+            }
+            
+            .confidence {
+                flex-direction: column;
+                gap: 10px;
             }
         }
         
@@ -816,6 +829,7 @@
             <button class="keyboard-key" data-value=".">.</button>
             <button class="keyboard-key" data-value="0">0</button>
             <button class="keyboard-key" data-value="-">-</button>
+            <button class="keyboard-key" data-value="+">+</button>
             <button class="keyboard-key keyboard-key-wide keyboard-action" data-action="close">Готово</button>
         </div>
     </div>
@@ -845,6 +859,18 @@
                 document.body.setAttribute('data-theme', 'dark');
                 themeToggle.textContent = '☀️';
             }
+            
+            // Prevent zoom on double tap
+            document.addEventListener('dblclick', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+            
+            // Prevent zoom on iOS
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
             
             // Tab functionality
             tabs.forEach(tab => {
@@ -886,6 +912,31 @@
             // Function to show custom keyboard
             function showCustomKeyboard() {
                 customKeyboard.classList.add('visible');
+                
+                // Show/hide special keys based on input type
+                const specialKeys = document.querySelectorAll('.keyboard-key[data-value="."], .keyboard-key[data-value="-"], .keyboard-key[data-value="+"], .keyboard-key[data-value=":"]');
+                
+                specialKeys.forEach(key => {
+                    key.style.display = 'flex';
+                });
+                
+                if (activeInput) {
+                    if (activeInput.id === 'manual-total') {
+                        // For total input, show only dot
+                        document.querySelector('.keyboard-key[data-value="-"]').style.display = 'none';
+                        document.querySelector('.keyboard-key[data-value="+"]').style.display = 'none';
+                        document.querySelector('.keyboard-key[data-value=":"]').style.display = 'none';
+                    } else if (activeInput.id === 'manual-handicap') {
+                        // For handicap input, show minus and plus
+                        document.querySelector('.keyboard-key[data-value="."]').style.display = 'none';
+                        document.querySelector('.keyboard-key[data-value=":"]').style.display = 'none';
+                    } else if (activeInput.id === 'manual-score' || activeInput.id === 'manual-time') {
+                        // For score and time inputs, show colon
+                        document.querySelector('.keyboard-key[data-value="."]').style.display = 'none';
+                        document.querySelector('.keyboard-key[data-value="-"]').style.display = 'none';
+                        document.querySelector('.keyboard-key[data-value="+"]').style.display = 'none';
+                    }
+                }
             }
             
             // Function to hide custom keyboard
@@ -896,7 +947,8 @@
             
             // Keyboard button clicks
             document.querySelectorAll('.keyboard-key').forEach(key => {
-                key.addEventListener('click', function() {
+                key.addEventListener('click', function(e) {
+                    e.preventDefault();
                     if (!activeInput) return;
                     
                     const value = this.getAttribute('data-value');
@@ -909,6 +961,11 @@
                     } else if (value) {
                         activeInput.value += value;
                     }
+                });
+                
+                // Prevent double tap zoom on keyboard keys
+                key.addEventListener('dblclick', (e) => {
+                    e.preventDefault();
                 });
             });
             
@@ -1039,7 +1096,7 @@
                 
                 // Альтернативные варианты для тотала и форы
                 const alternativeTotalRegex = /(?:ТБ|ТМ|TB|TM)[\s\S]{0,15}?([\d.,]+)/i;
-                const alternativeHandicapRegex = /(?:Ф1|Ф2|F1|F2)[\s\S]{0,15}?([+-?[\d.,]+)/i;
+                const alternativeHandicapRegex = /(?:Ф1|Ф2|F1|F2)[\s\S]{0,15}?([+-]?[\d.,]+)/i;
                 
                 // Извлекаем данные
                 const scoreMatch = text.match(scoreRegex);
