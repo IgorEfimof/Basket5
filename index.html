@@ -623,6 +623,23 @@
             -ms-overflow-style: none;  /* IE and Edge */
             scrollbar-width: none;  /* Firefox */
         }
+        
+        .total-type {
+            margin-left: 5px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .total-type.over {
+            background: var(--positive-color);
+        }
+        
+        .total-type.under {
+            background: var(--negative-color);
+        }
     </style>
 </head>
 <body>
@@ -686,6 +703,13 @@
                         <input type="text" class="input-field" id="manual-total" placeholder="237.5" readonly>
                     </div>
                     <div class="input-group">
+                        <label class="input-label">Тип тотала</label>
+                        <select class="input-field" id="manual-total-type" style="appearance: menulist;">
+                            <option value="over">ТБ (Тотал больше)</option>
+                            <option value="under">ТМ (Тотал меньше)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
                         <label class="input-label">Фора</label>
                         <input type="text" class="input-field" id="manual-handicap" placeholder="-6.5" readonly>
                     </div>
@@ -717,6 +741,10 @@
                     <div class="ocr-item">
                         <span class="ocr-label">Тотал:</span>
                         <span class="ocr-value" id="ocr-total">--</span>
+                    </div>
+                    <div class="ocr-item">
+                        <span class="ocr-label">Тип тотала:</span>
+                        <span class="ocr-value" id="ocr-total-type">--</span>
                     </div>
                     <div class="ocr-item">
                         <span class="ocr-label">Фора:</span>
@@ -813,9 +841,11 @@
             const manualInputs = document.querySelectorAll('.input-field');
             const tabs = document.querySelectorAll('.tab');
             const tabContents = document.querySelectorAll('.tab-content');
+            const totalTypeSelect = document.getElementById('manual-total-type');
             
             let activeInput = null;
             let isDarkTheme = localStorage.getItem('darkTheme') === 'true';
+            let totalType = 'over'; // По умолчанию ТБ
             
             // Apply saved theme
             if (isDarkTheme) {
@@ -850,26 +880,33 @@
                 });
             });
             
+            // Update total type when selection changes
+            totalTypeSelect.addEventListener('change', function() {
+                totalType = this.value;
+            });
+            
             // Prevent default behavior for input fields to avoid system keyboard
             manualInputs.forEach(input => {
-                input.addEventListener('focus', (e) => {
-                    e.preventDefault();
-                    showCustomKeyboard();
-                    activeInput = input;
-                });
-                
-                input.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showCustomKeyboard();
-                    activeInput = input;
-                });
-                
-                // Prevent touch events from triggering system keyboard
-                input.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    showCustomKeyboard();
-                    activeInput = input;
-                });
+                if (input.id !== 'manual-total-type') {
+                    input.addEventListener('focus', (e) => {
+                        e.preventDefault();
+                        showCustomKeyboard();
+                        activeInput = input;
+                    });
+                    
+                    input.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        showCustomKeyboard();
+                        activeInput = input;
+                    });
+                    
+                    // Prevent touch events from triggering system keyboard
+                    input.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        showCustomKeyboard();
+                        activeInput = input;
+                    });
+                }
             });
             
             // Function to show custom keyboard
@@ -973,12 +1010,15 @@
                 manualInputs.forEach(input => {
                     input.value = '';
                 });
+                totalTypeSelect.value = 'over';
+                totalType = 'over';
                 
                 document.getElementById('ocr-score').textContent = '--';
                 document.getElementById('ocr-period').textContent = '--';
                 document.getElementById('ocr-time').textContent = '--';
                 document.getElementById('ocr-time-remaining').textContent = '--';
                 document.getElementById('ocr-total').textContent = '--';
+                document.getElementById('ocr-total-type').textContent = '--';
                 document.getElementById('ocr-handicap').textContent = '--';
                 
                 document.getElementById('predicted-total').textContent = '--';
@@ -1055,6 +1095,7 @@
                     document.getElementById('ocr-time').innerHTML = '<span class="loading"></span>';
                     document.getElementById('ocr-time-remaining').innerHTML = '<span class="loading"></span>';
                     document.getElementById('ocr-total').innerHTML = '<span class="loading"></span>';
+                    document.getElementById('ocr-total-type').innerHTML = '<span class="loading"></span>';
                     document.getElementById('ocr-handicap').innerHTML = '<span class="loading"></span>';
                     
                     // Запускаем распознавание текста с помощью Tesseract
@@ -1086,8 +1127,9 @@
                 const totalRegex = /Т[О0]?[ТT]?[АA]?[ЛJ]?[^0-9]{0,20}?([\d.,]+)/i;
                 const handicapRegex = /Ф[12]\s*[\(]([+-]?[\d.,]+)[\)]/i;
                 
-                // Альтернативные варианты для тотала и форы
-                const alternativeTotalRegex = /(?:ТБ|ТМ|TB|TM)[\s\S]{0,15}?([\d.,]+)/i;
+                // Регулярные выражения для ТМ/ТБ
+                const totalTypeRegex = /(ТМ|ТБ|TM|TB)\s*([\d.,]+)/i;
+                const alternativeTotalRegex = /(ТБ|ТМ|TB|TM)[\s\S]{0,15}?([\d.,]+)/i;
                 const alternativeHandicapRegex = /(?:Ф1|Ф2|F1|F2)[\s\S]{0,15}?([+-]?[\d.,]+)/i;
                 
                 // Извлекаем данные
@@ -1095,15 +1137,34 @@
                 const periodMatch = text.match(periodRegex);
                 const timeMatch = text.match(timeRegex);
                 let totalMatch = text.match(totalRegex);
+                let totalTypeMatch = text.match(totalTypeRegex);
                 let handicapMatch = text.match(handicapRegex);
                 
                 // Если не найдено стандартными способами, пробуем альтернативные
-                if (!totalMatch) totalMatch = text.match(alternativeTotalRegex);
-                if (!handicapMatch) handicapMatch = text.match(alternativeHandicapRegex);
+                if (!totalMatch && totalTypeMatch) {
+                    totalMatch = totalTypeMatch;
+                } else if (!totalMatch) {
+                    totalMatch = text.match(alternativeTotalRegex);
+                }
+                
+                if (!handicapMatch) {
+                    handicapMatch = text.match(alternativeHandicapRegex);
+                }
                 
                 debugText.innerHTML += `Найдены данные: счет=${scoreMatch ? 'да' : 'нет'}, четверть=${periodMatch ? 'да' : 'нет'}, время=${timeMatch ? 'да' : 'нет'}<br>`;
                 
                 let score1 = 0, score2 = 0, period = 1, timeElapsed = "00:00", total = 0, handicap = 0;
+                let detectedTotalType = "over"; // По умолчанию ТБ
+                
+                // Определяем тип тотала (ТМ или ТБ)
+                if (totalTypeMatch) {
+                    const typeText = totalTypeMatch[1].toUpperCase();
+                    if (typeText === 'ТМ' || typeText === 'TM') {
+                        detectedTotalType = 'under';
+                    } else if (typeText === 'ТБ' || typeText === 'TB') {
+                        detectedTotalType = 'over';
+                    }
+                }
                 
                 // Обрабатываем счет - улучшенная логика
                 if (scoreMatch) {
@@ -1153,9 +1214,20 @@
                 
                 // Обрабатываем тотал
                 if (totalMatch) {
-                    total = parseFloat(totalMatch[1].replace(',', '.'));
+                    // Если у нас есть совпадение с типом тотала, используем второй элемент
+                    const totalValue = totalTypeMatch ? totalMatch[2] : totalMatch[1];
+                    total = parseFloat(totalValue.replace(',', '.'));
                     document.getElementById('ocr-total').textContent = total;
                     document.getElementById('manual-total').value = total;
+                    
+                    // Отображаем тип тотала
+                    const totalTypeText = detectedTotalType === 'over' ? 'ТБ' : 'ТМ';
+                    const totalTypeClass = detectedTotalType === 'over' ? 'over' : 'under';
+                    document.getElementById('ocr-total-type').innerHTML = `<span class="total-type ${totalTypeClass}">${totalTypeText}</span>`;
+                    
+                    // Устанавливаем тип тотала в ручном вводе
+                    document.getElementById('manual-total-type').value = detectedTotalType;
+                    totalType = detectedTotalType;
                 }
                 
                 // Обрабатываем фору
@@ -1172,7 +1244,7 @@
                 document.getElementById('results-tab').classList.add('active');
                 
                 // Генерируем прогноз
-                generatePredictions(score1, score2, period, timeElapsed, total, handicap);
+                generatePredictions(score1, score2, period, timeElapsed, total, handicap, detectedTotalType);
             }
             
             function processManualInput() {
@@ -1181,6 +1253,7 @@
                 const timeInput = document.getElementById('manual-time').value;
                 const totalInput = parseFloat(document.getElementById('manual-total').value);
                 const handicapInput = parseFloat(document.getElementById('manual-handicap').value);
+                const totalTypeInput = document.getElementById('manual-total-type').value;
                 
                 if (!scoreInput || !periodInput || !timeInput) {
                     alert('Пожалуйста, заполните все обязательные поля');
@@ -1207,6 +1280,12 @@
                 document.getElementById('ocr-time-remaining').textContent = timeRemainingFormatted;
                 
                 document.getElementById('ocr-total').textContent = totalInput || '--';
+                
+                // Отображаем тип тотала
+                const totalTypeText = totalTypeInput === 'over' ? 'ТБ' : 'ТМ';
+                const totalTypeClass = totalTypeInput === 'over' ? 'over' : 'under';
+                document.getElementById('ocr-total-type').innerHTML = totalInput ? `<span class="total-type ${totalTypeClass}">${totalTypeText}</span>` : '--';
+                
                 document.getElementById('ocr-handicap').textContent = handicapInput || '--';
                 
                 // Переключаемся на вкладку результатов
@@ -1216,10 +1295,10 @@
                 document.getElementById('results-tab').classList.add('active');
                 
                 // Генерируем прогноз
-                generatePredictions(score1, score2, periodInput, timeInput, totalInput, handicapInput);
+                generatePredictions(score1, score2, periodInput, timeInput, totalInput, handicapInput, totalTypeInput);
             }
             
-            function generatePredictions(score1, score2, period, timeElapsed, totalLine, handicapLine) {
+            function generatePredictions(score1, score2, period, timeElapsed, totalLine, handicapLine, totalType) {
                 const periodLength = parseInt(leagueSelect.value);
                 const totalPeriods = 4;
                 
@@ -1256,16 +1335,26 @@
                     overtimeProbability = Math.min(80, overtimeProbability);
                 }
                 
-                // Формирование рекомендации
+                // Формирование рекомендации с учетом типа тотала
                 let recommendation = "";
                 let confidence = 0;
                 
-                if (predictedTotalPoints > totalLine) {
-                    recommendation = `Рекомендуется ставка на ТОТАЛ БОЛЬШЕ ${totalLine}`;
-                    confidence = 75;
-                } else {
-                    recommendation = `Рекомендуется ставка на ТОТАЛ МЕНЬШЕ ${totalLine}`;
-                    confidence = 65;
+                if (totalType === 'over') {
+                    if (predictedTotalPoints > totalLine) {
+                        recommendation = `Рекомендуется ставка на ТОТАЛ БОЛЬШЕ ${totalLine}`;
+                        confidence = 75;
+                    } else {
+                        recommendation = `НЕ рекомендуется ставка на ТОТАЛ БОЛЬШЕ ${totalLine}`;
+                        confidence = 65;
+                    }
+                } else if (totalType === 'under') {
+                    if (predictedTotalPoints < totalLine) {
+                        recommendation = `Рекомендуется ставка на ТОТАЛ МЕНЬШЕ ${totalLine}`;
+                        confidence = 75;
+                    } else {
+                        recommendation = `НЕ рекомендуется ставка на ТОТАЛ МЕНЬШЕ ${totalLine}`;
+                        confidence = 65;
+                    }
                 }
                 
                 // Учет форы
