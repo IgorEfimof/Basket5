@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Анализатор ставок TT PRO v2.2</title>
+    <title>Анализатор ставок TT PRO v2.3</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -32,6 +32,8 @@
             --positive-color: #27ae60;
             --negative-color: #e74c3c;
             --neutral-color: #3498db;
+            --team1-color: #3498db;
+            --team2-color: #e74c3c;
         }
         
         [data-theme="dark"] {
@@ -44,6 +46,8 @@
             --input-bg: rgba(50, 50, 50, 0.95);
             --input-color: #ecf0f1;
             --stats-bg: rgba(30, 30, 30, 0.9);
+            --team1-color: #5dade2;
+            --team2-color: #ec7063;
         }
         
         body {
@@ -669,12 +673,69 @@
             background-color: rgba(231, 76, 60, 0.2);
             color: var(--negative-color);
         }
+        
+        .team-score {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .team-name {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .team1 .team-name {
+            color: var(--team1-color);
+        }
+        
+        .team2 .team-name {
+            color: var(--team2-color);
+        }
+        
+        .quarters {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .quarter-score {
+            padding: 4px 8px;
+            border-radius: 4px;
+            background-color: rgba(0, 0, 0, 0.1);
+            font-size: 0.9rem;
+        }
+        
+        .total-score {
+            padding: 4px 8px;
+            border-radius: 4px;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .score-container {
+            margin-top: 15px;
+            padding: 12px;
+            background: var(--stats-bg);
+            border-radius: 8px;
+        }
+        
+        .score-title {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Анализатор ставок TT PRO v2.2</h1>
+            <h1>Анализатор ставок TT PRO v2.3</h1>
             <div class="subtitle">Супер-точный анализ на основе OCR-распознавания</div>
             <button class="theme-toggle" id="theme-toggle">🌙</button>
         </header>
@@ -694,7 +755,7 @@
                     <select class="championship-select" id="league-select">
                         <option value="10">Евролига, ВТБ, IPBL (4×10 мин)</option>
                         <option value="12">NBA (4×12 мин)</option>
-                        <option value="12">NCAA (2×20 мин)</option>
+                        <option value="20">NCAA (2×20 мин)</option>
                     </select>
                 </div>
                 
@@ -754,6 +815,30 @@
                     <div class="action-buttons">
                         <button class="action-btn analyze-btn" id="manual-submit">Анализировать</button>
                         <button class="action-btn clear-btn" id="clear-btn">Очистить</button>
+                    </div>
+                </div>
+                
+                <div class="score-container">
+                    <h3 class="score-title">Распознанный счет по четвертям</h3>
+                    <div class="team-score team1">
+                        <span class="team-name" id="team1-name">Команда 1</span>
+                        <div class="quarters">
+                            <span class="quarter-score" id="team1-q1">-</span>
+                            <span class="quarter-score" id="team1-q2">-</span>
+                            <span class="quarter-score" id="team1-q3">-</span>
+                            <span class="quarter-score" id="team1-q4">-</span>
+                            <span class="total-score" id="team1-total">0</span>
+                        </div>
+                    </div>
+                    <div class="team-score team2">
+                        <span class="team-name" id="team2-name">Команда 2</span>
+                        <div class="quarters">
+                            <span class="quarter-score" id="team2-q1">-</span>
+                            <span class="quarter-score" id="team2-q2">-</span>
+                            <span class="quarter-score" id="team2-q3">-</span>
+                            <span class="quarter-score" id="team2-q4">-</span>
+                            <span class="total-score" id="team2-total">0</span>
+                        </div>
                     </div>
                 </div>
                 
@@ -868,12 +953,12 @@
                     
                     <div class="result-grid" style="grid-template-columns: 1fr 1fr; margin-top: 15px;">
                         <div class="result-card">
-                            <div class="result-title">Команда 1 (PPG)</div>
+                            <div class="result-title" id="team1-stats-name">Команда 1 (PPG)</div>
                             <div class="result-value neutral" id="team1-ppg">--</div>
                         </div>
                         
                         <div class="result-card">
-                            <div class="result-title">Команда 2 (PPG)</div>
+                            <div class="result-title" id="team2-stats-name">Команда 2 (PPG)</div>
                             <div class="result-value neutral" id="team2-ppg">--</div>
                         </div>
                     </div>
@@ -938,9 +1023,26 @@
             const progressFill = document.getElementById('progress-fill');
             const statusMessage = document.getElementById('status-message');
             
+            // Элементы для отображения счета по четвертям
+            const team1Name = document.getElementById('team1-name');
+            const team2Name = document.getElementById('team2-name');
+            const team1Q1 = document.getElementById('team1-q1');
+            const team1Q2 = document.getElementById('team1-q2');
+            const team1Q3 = document.getElementById('team1-q3');
+            const team1Q4 = document.getElementById('team1-q4');
+            const team1Total = document.getElementById('team1-total');
+            const team2Q1 = document.getElementById('team2-q1');
+            const team2Q2 = document.getElementById('team2-q2');
+            const team2Q3 = document.getElementById('team2-q3');
+            const team2Q4 = document.getElementById('team2-q4');
+            const team2Total = document.getElementById('team2-total');
+            const team1StatsName = document.getElementById('team1-stats-name');
+            const team2StatsName = document.getElementById('team2-stats-name');
+            
             let activeInput = null;
             let isDarkTheme = localStorage.getItem('darkTheme') === 'true';
             let totalType = 'over';
+            let teamNames = ['Команда 1', 'Команда 2'];
             
             // Apply saved theme
             if (isDarkTheme) {
@@ -1108,6 +1210,9 @@
                 totalTypeSelect.value = 'over';
                 totalType = 'over';
                 
+                // Сброс счета по четвертям
+                resetQuarterScores();
+                
                 document.getElementById('ocr-score').textContent = '--';
                 document.getElementById('ocr-period').textContent = '--';
                 document.getElementById('ocr-time').textContent = '--';
@@ -1139,6 +1244,26 @@
                 progressBar.style.display = 'none';
                 statusMessage.innerHTML = '';
             });
+            
+            // Функция сброса счета по четвертям
+            function resetQuarterScores() {
+                team1Name.textContent = 'Команда 1';
+                team2Name.textContent = 'Команда 2';
+                team1StatsName.textContent = 'Команда 1 (PPG)';
+                team2StatsName.textContent = 'Команда 2 (PPG)';
+                
+                team1Q1.textContent = '-';
+                team1Q2.textContent = '-';
+                team1Q3.textContent = '-';
+                team1Q4.textContent = '-';
+                team1Total.textContent = '0';
+                
+                team2Q1.textContent = '-';
+                team2Q2.textContent = '-';
+                team2Q3.textContent = '-';
+                team2Q4.textContent = '-';
+                team2Total.textContent = '0';
+            }
             
             // Theme toggle functionality
             themeToggle.addEventListener('click', function() {
@@ -1214,6 +1339,9 @@
                     document.getElementById('ocr-total-type').innerHTML = '<span class="loading"></span>';
                     document.getElementById('ocr-handicap').innerHTML = '<span class="loading"></span>';
                     
+                    // Сброс счета по четвертям перед новым распознаванием
+                    resetQuarterScores();
+                    
                     showStatus('Начинаем распознавание текста...', 'success');
                     updateProgress(10);
                     
@@ -1251,28 +1379,25 @@
             }
             
             function processOCRText(text) {
+                // Разделяем текст на строки
+                const lines = text.split('\n').filter(line => line.trim() !== '');
+                
+                debugText.innerHTML += `Всего строк: ${lines.length}<br>`;
+                
                 // Улучшенные регулярные выражения для распознавания данных
-                const scoreRegex = /(\d+)[\s\S]{0,50}?(\d+)\s*$/m;
                 
-                // Улучшенное регулярное выражение для четверти и времени
-                // Формат: xx:xx (время начала игры | x-я четверть, xx:xx)
+                // 1. Поиск счета по четвертям
+                const scoreData = extractScoreFromLines(lines);
+                let score1 = scoreData.team1Total;
+                let score2 = scoreData.team2Total;
+                teamNames = scoreData.teamNames;
+                
+                // 2. Поиск четверти и времени
                 const periodTimeRegex = /(\d{1,2}:\d{2})\s*[\(].*?[|]\s*(\d+)-я четверть\s*,\s*(\d{1,2}:\d{2})[\)]/i;
-                
-                // Альтернативные варианты для четверти и времени
                 const alternativePeriodTimeRegex = /(\d+)-я четверть\s*[,\s]*(\d{1,2}:\d{2})/i;
                 const simplePeriodRegex = /(\d+)-я четверть/i;
                 const simpleTimeRegex = /(\d{1,2}:\d{2})\s*[|]/;
                 
-                // Улучшенное регулярное выражение для тотала с учетом ТМ в скобках
-                const totalRegex = /Т[М]\s*[\(]?\s*([\d.,]+)\s*[\)]?/i;
-                
-                // Альтернативные варианты для тотала
-                const alternativeTotalRegex = /Т[О0]?[ТT]?[АA]?[ЛJ]?[^0-9]{0,20}?([\d.,]+)/i;
-                const handicapRegex = /Ф[12]\s*[\(]([+-]?[\d.,]+)[\)]/i;
-                const alternativeHandicapRegex = /(?:Ф1|Ф2|F1|F2)[\s\S]{0,15}?([+-]?[\d.,]+)/i;
-                
-                // Извлекаем данные
-                const scoreMatch = text.match(scoreRegex);
                 let periodTimeMatch = text.match(periodTimeRegex);
                 let periodMatch, timeMatch;
                 
@@ -1285,36 +1410,22 @@
                     }
                 }
                 
+                // 3. Поиск тотала
+                const totalRegex = /Т[М]\s*[\(]?\s*([\d.,]+)\s*[\)]?/i;
+                const alternativeTotalRegex = /Т[О0]?[ТT]?[АA]?[ЛJ]?[^0-9]{0,20}?([\d.,]+)/i;
                 let totalMatch = text.match(totalRegex);
-                let handicapMatch = text.match(handicapRegex);
-                
-                // Если не найдено стандартными способами, пробуем альтернативные
                 if (!totalMatch) totalMatch = text.match(alternativeTotalRegex);
+                
+                // 4. Поиск форы
+                const handicapRegex = /Ф[12]\s*[\(]([+-]?[\d.,]+)[\)]/i;
+                const alternativeHandicapRegex = /(?:Ф1|Ф2|F1|F2)[\s\S]{0,15}?([+-]?[\d.,]+)/i;
+                let handicapMatch = text.match(handicapRegex);
                 if (!handicapMatch) handicapMatch = text.match(alternativeHandicapRegex);
                 
-                debugText.innerHTML += `Найдены данные: счет=${scoreMatch ? 'да' : 'нет'}, четверть/время=${periodTimeMatch ? 'да' : 'нет'}<br>`;
+                debugText.innerHTML += `Найдены данные: счет=${score1 && score2 ? 'да' : 'нет'}, четверть/время=${periodTimeMatch ? 'да' : 'нет'}<br>`;
                 
-                let score1 = 0, score2 = 0, period = 1, timeElapsed = "00:00", total = 0, handicap = 0;
-                let detectedTotalType = "under"; // По умолчанию ТМ, так как пользователь указал, что тотал обозначен как ТМ
-                
-                // Обрабатываем счет - улучшенная логика
-                if (scoreMatch) {
-                    // Ищем два числа, которые могут быть счетом
-                    const numbers = text.match(/\d+/g);
-                    if (numbers && numbers.length >= 2) {
-                        // Берем два последних больших числа (предполагая, что счет - это самые большие числа)
-                        const largeNumbers = numbers.filter(n => parseInt(n) > 10);
-                        if (largeNumbers.length >= 2) {
-                            score1 = parseInt(largeNumbers[largeNumbers.length - 2]);
-                            score2 = parseInt(largeNumbers[largeNumbers.length - 1]);
-                        } else {
-                            score1 = parseInt(numbers[numbers.length - 2]);
-                            score2 = parseInt(numbers[numbers.length - 1]);
-                        }
-                    }
-                    document.getElementById('ocr-score').textContent = `${score1}:${score2}`;
-                    document.getElementById('manual-score').value = `${score1}:${score2}`;
-                }
+                let period = 1, timeElapsed = "00:00", total = 0, handicap = 0;
+                let detectedTotalType = "under"; // По умолчанию ТМ
                 
                 // Обрабатываем период и время
                 if (periodTimeMatch) {
@@ -1335,17 +1446,7 @@
                     document.getElementById('manual-time').value = timeElapsed;
                     
                     // Рассчитываем оставшееся время
-                    const periodLength = parseInt(leagueSelect.value);
-                    const [minutesElapsed, secondsElapsed] = timeElapsed.split(':').map(Number);
-                    const totalSecondsElapsed = minutesElapsed * 60 + secondsElapsed;
-                    const totalSecondsInPeriod = periodLength * 60;
-                    const totalSecondsRemaining = totalSecondsInPeriod - totalSecondsElapsed;
-                    
-                    const minutesRemaining = Math.floor(totalSecondsRemaining / 60);
-                    const secondsRemaining = totalSecondsRemaining % 60;
-                    
-                    const timeRemainingFormatted = `${minutesRemaining}:${secondsRemaining.toString().padStart(2, '0')}`;
-                    document.getElementById('ocr-time-remaining').textContent = timeRemainingFormatted;
+                    calculateRemainingTime(period, timeElapsed);
                 } else if (periodMatch || timeMatch) {
                     // Если нашли отдельно четверть и время
                     if (periodMatch) {
@@ -1360,17 +1461,7 @@
                         document.getElementById('manual-time').value = timeElapsed;
                         
                         // Рассчитываем оставшееся время
-                        const periodLength = parseInt(leagueSelect.value);
-                        const [minutesElapsed, secondsElapsed] = timeElapsed.split(':').map(Number);
-                        const totalSecondsElapsed = minutesElapsed * 60 + secondsElapsed;
-                        const totalSecondsInPeriod = periodLength * 60;
-                        const totalSecondsRemaining = totalSecondsInPeriod - totalSecondsElapsed;
-                        
-                        const minutesRemaining = Math.floor(totalSecondsRemaining / 60);
-                        const secondsRemaining = totalSecondsRemaining % 60;
-                        
-                        const timeRemainingFormatted = `${minutesRemaining}:${secondsRemaining.toString().padStart(2, '0')}`;
-                        document.getElementById('ocr-time-remaining').textContent = timeRemainingFormatted;
+                        calculateRemainingTime(period, timeElapsed);
                     }
                 }
                 
@@ -1397,6 +1488,12 @@
                     document.getElementById('manual-handicap').value = handicap;
                 }
                 
+                // Отображаем общий счет
+                if (score1 !== null && score2 !== null) {
+                    document.getElementById('ocr-score').textContent = `${score1}:${score2}`;
+                    document.getElementById('manual-score').value = `${score1}:${score2}`;
+                }
+                
                 // Переключаемся на вкладку результатов
                 tabs.forEach(t => t.classList.remove('active'));
                 tabContents.forEach(tc => tc.classList.remove('active'));
@@ -1408,6 +1505,100 @@
                 
                 // Обновляем статистику
                 updateStatistics(score1, score2, period, timeElapsed, total, handicap, detectedTotalType);
+            }
+            
+            // Функция для извлечения счета из строк
+            function extractScoreFromLines(lines) {
+                let team1Name = 'Команда 1';
+                let team2Name = 'Команда 2';
+                let team1Scores = [0, 0, 0, 0];
+                let team2Scores = [0, 0, 0, 0];
+                let team1Total = 0;
+                let team2Total = 0;
+                
+                // Ищем строки с названиями команд и очками
+                for (let i = 0; i < Math.min(lines.length, 10); i++) {
+                    const line = lines[i];
+                    debugText.innerHTML += `Строка ${i}: "${line}"<br>`;
+                    
+                    // Ищем числа в строке
+                    const numbers = line.match(/\d+/g);
+                    if (numbers && numbers.length >= 3) {
+                        // Предполагаем, что это строка с очками команды
+                        const scores = numbers.map(Number);
+                        
+                        // Если это первая команда (первая найденная строка с очками)
+                        if (team1Total === 0) {
+                            team1Scores = scores.slice(-4); // Берем последние 4 числа
+                            team1Total = team1Scores.reduce((a, b) => a + b, 0);
+                            
+                            // Пытаемся извлечь название команды (текст до чисел)
+                            const nameMatch = line.match(/^([^\d]+)/);
+                            if (nameMatch) {
+                                team1Name = nameMatch[1].trim();
+                            }
+                        } 
+                        // Если это вторая команда (вторая найденная строка с очками)
+                        else if (team2Total === 0) {
+                            team2Scores = scores.slice(-4); // Берем последние 4 числа
+                            team2Total = team2Scores.reduce((a, b) => a + b, 0);
+                            
+                            // Пытаемся извлечь название команды (текст до чисел)
+                            const nameMatch = line.match(/^([^\d]+)/);
+                            if (nameMatch) {
+                                team2Name = nameMatch[1].trim();
+                            }
+                            break; // Нашли обе команды, выходим
+                        }
+                    }
+                }
+                
+                // Обновляем интерфейс с данными о четвертях
+                updateQuarterScores(team1Name, team2Name, team1Scores, team2Scores, team1Total, team2Total);
+                
+                return {
+                    team1Total: team1Total,
+                    team2Total: team2Total,
+                    teamNames: [team1Name, team2Name]
+                };
+            }
+            
+            // Функция обновления интерфейса счета по четвертям
+            function updateQuarterScores(team1Name, team2Name, team1Scores, team2Scores, team1Total, team2Total) {
+                // Обновляем названия команд
+                document.getElementById('team1-name').textContent = team1Name;
+                document.getElementById('team2-name').textContent = team2Name;
+                document.getElementById('team1-stats-name').textContent = `${team1Name} (PPG)`;
+                document.getElementById('team2-stats-name').textContent = `${team2Name} (PPG)`;
+                
+                // Обновляем очки по четвертям для команды 1
+                document.getElementById('team1-q1').textContent = team1Scores[0] || '-';
+                document.getElementById('team1-q2').textContent = team1Scores[1] || '-';
+                document.getElementById('team1-q3').textContent = team1Scores[2] || '-';
+                document.getElementById('team1-q4').textContent = team1Scores[3] || '-';
+                document.getElementById('team1-total').textContent = team1Total;
+                
+                // Обновляем очки по четвертям для команды 2
+                document.getElementById('team2-q1').textContent = team2Scores[0] || '-';
+                document.getElementById('team2-q2').textContent = team2Scores[1] || '-';
+                document.getElementById('team2-q3').textContent = team2Scores[2] || '-';
+                document.getElementById('team2-q4').textContent = team2Scores[3] || '-';
+                document.getElementById('team2-total').textContent = team2Total;
+            }
+            
+            // Функция расчета оставшегося времени
+            function calculateRemainingTime(period, timeElapsed) {
+                const periodLength = parseInt(leagueSelect.value);
+                const [minutesElapsed, secondsElapsed] = timeElapsed.split(':').map(Number);
+                const totalSecondsElapsed = minutesElapsed * 60 + secondsElapsed;
+                const totalSecondsInPeriod = periodLength * 60;
+                const totalSecondsRemaining = totalSecondsInPeriod - totalSecondsElapsed;
+                
+                const minutesRemaining = Math.floor(totalSecondsRemaining / 60);
+                const secondsRemaining = totalSecondsRemaining % 60;
+                
+                const timeRemainingFormatted = `${minutesRemaining}:${secondsRemaining.toString().padStart(2, '0')}`;
+                document.getElementById('ocr-time-remaining').textContent = timeRemainingFormatted;
             }
             
             function processManualInput() {
@@ -1430,17 +1621,7 @@
                 document.getElementById('ocr-time').textContent = timeInput;
                 
                 // Рассчитываем оставшееся время
-                const periodLength = parseInt(leagueSelect.value);
-                const [minutesElapsed, secondsElapsed] = timeInput.split(':').map(Number);
-                const totalSecondsElapsed = minutesElapsed * 60 + secondsElapsed;
-                const totalSecondsInPeriod = periodLength * 60;
-                const totalSecondsRemaining = totalSecondsInPeriod - totalSecondsElapsed;
-                
-                const minutesRemaining = Math.floor(totalSecondsRemaining / 60);
-                const secondsRemaining = totalSecondsRemaining % 60;
-                
-                const timeRemainingFormatted = `${minutesRemaining}:${secondsRemaining.toString().padStart(2, '0')}`;
-                document.getElementById('ocr-time-remaining').textContent = timeRemainingFormatted;
+                calculateRemainingTime(periodInput, timeInput);
                 
                 document.getElementById('ocr-total').textContent = totalInput || '--';
                 
@@ -1527,9 +1708,9 @@
                 const predictedDifference = predictedScore1 - predictedScore2;
                 if (handicapLine && Math.abs(predictedDifference - handicapLine) > 3) {
                     if (predictedDifference > handicapLine) {
-                        recommendation += ` и ПОБЕДА КОМАНДЫ 1 с форой ${handicapLine > 0 ? '+' : ''}${handicapLine}`;
+                        recommendation += ` и ПОБЕДА ${teamNames[0]} с форой ${handicapLine > 0 ? '+' : ''}${handicapLine}`;
                     } else {
-                        recommendation += ` и ПОБЕДА КОМАНДЫ 2 с форой ${-handicapLine > 0 ? '+' : ''}${-handicapLine}`;
+                        recommendation += ` и ПОБЕДА ${teamNames[1]} с форой ${-handicapLine > 0 ? '+' : ''}${-handicapLine}`;
                     }
                     confidence += 5;
                 }
