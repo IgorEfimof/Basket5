@@ -3,10 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon200.png">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="BSK5">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Анализатор ставок TT PRO v2.1</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
@@ -1124,12 +1120,13 @@
                 const scoreRegex = /(\d+)[\s\S]{0,50}?(\d+)\s*$/m;
                 const periodRegex = /(\d+)-я четверть/i;
                 const timeRegex = /(\d{1,2}:\d{2})\s*[|]/;
-                const totalRegex = /Т[О0]?[ТT]?[АA]?[ЛJ]?[^0-9]{0,20}?([\d.,]+)/i;
-                const handicapRegex = /Ф[12]\s*[\(]([+-]?[\d.,]+)[\)]/i;
                 
-                // Регулярные выражения для ТМ/ТБ
-                const totalTypeRegex = /(ТМ|ТБ|TM|TB)\s*([\d.,]+)/i;
-                const alternativeTotalRegex = /(ТБ|ТМ|TB|TM)[\s\S]{0,15}?([\d.,]+)/i;
+                // Улучшенное регулярное выражение для тотала с учетом ТМ в скобках
+                const totalRegex = /Т[М]\s*[\(]?\s*([\d.,]+)\s*[\)]?/i;
+                
+                // Альтернативные варианты для тотала
+                const alternativeTotalRegex = /Т[О0]?[ТT]?[АA]?[ЛJ]?[^0-9]{0,20}?([\d.,]+)/i;
+                const handicapRegex = /Ф[12]\s*[\(]([+-]?[\d.,]+)[\)]/i;
                 const alternativeHandicapRegex = /(?:Ф1|Ф2|F1|F2)[\s\S]{0,15}?([+-]?[\d.,]+)/i;
                 
                 // Извлекаем данные
@@ -1137,34 +1134,16 @@
                 const periodMatch = text.match(periodRegex);
                 const timeMatch = text.match(timeRegex);
                 let totalMatch = text.match(totalRegex);
-                let totalTypeMatch = text.match(totalTypeRegex);
                 let handicapMatch = text.match(handicapRegex);
                 
                 // Если не найдено стандартными способами, пробуем альтернативные
-                if (!totalMatch && totalTypeMatch) {
-                    totalMatch = totalTypeMatch;
-                } else if (!totalMatch) {
-                    totalMatch = text.match(alternativeTotalRegex);
-                }
-                
-                if (!handicapMatch) {
-                    handicapMatch = text.match(alternativeHandicapRegex);
-                }
+                if (!totalMatch) totalMatch = text.match(alternativeTotalRegex);
+                if (!handicapMatch) handicapMatch = text.match(alternativeHandicapRegex);
                 
                 debugText.innerHTML += `Найдены данные: счет=${scoreMatch ? 'да' : 'нет'}, четверть=${periodMatch ? 'да' : 'нет'}, время=${timeMatch ? 'да' : 'нет'}<br>`;
                 
                 let score1 = 0, score2 = 0, period = 1, timeElapsed = "00:00", total = 0, handicap = 0;
-                let detectedTotalType = "over"; // По умолчанию ТБ
-                
-                // Определяем тип тотала (ТМ или ТБ)
-                if (totalTypeMatch) {
-                    const typeText = totalTypeMatch[1].toUpperCase();
-                    if (typeText === 'ТМ' || typeText === 'TM') {
-                        detectedTotalType = 'under';
-                    } else if (typeText === 'ТБ' || typeText === 'TB') {
-                        detectedTotalType = 'over';
-                    }
-                }
+                let detectedTotalType = "under"; // По умолчанию ТМ, так как пользователь указал, что тотал обозначен как ТМ
                 
                 // Обрабатываем счет - улучшенная логика
                 if (scoreMatch) {
@@ -1214,9 +1193,7 @@
                 
                 // Обрабатываем тотал
                 if (totalMatch) {
-                    // Если у нас есть совпадение с типом тотала, используем второй элемент
-                    const totalValue = totalTypeMatch ? totalMatch[2] : totalMatch[1];
-                    total = parseFloat(totalValue.replace(',', '.'));
+                    total = parseFloat(totalMatch[1].replace(',', '.'));
                     document.getElementById('ocr-total').textContent = total;
                     document.getElementById('manual-total').value = total;
                     
