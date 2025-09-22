@@ -757,9 +757,12 @@
                 <div class="championship-selector">
                     <label class="championship-label">Лига:</label>
                     <select class="championship-select" id="league-select">
-                        <option value="10">Евролига, ВТБ, IPBL (4×10 мин)</option>
-                        <option value="12">NBA (4×12 мин)</option>
-                        <option value="20">NCAA (2×20 мин)</option>
+                        <option value="12_4">NBA (4×12 мин)</option>
+                        <option value="10_4">ФИБА (4×10 мин)</option>
+                        <option value="12_4_3x3">3×3 (4×12 мин)</option>
+                        <option value="10_4_3x3">3×3 (4×10 мин)</option>
+                        <option value="10_2_4x4">4×4 (2×10 мин)</option>
+                        <option value="5_4_cyber">Кибербаскетбол (4×5 мин)</option>
                     </select>
                 </div>
                 
@@ -793,7 +796,7 @@
                         <input type="text" class="input-field" id="manual-score" placeholder="100:92" readonly>
                     </div>
                     <div class="input-group">
-                        <label class="input-label">Четверть</label>
+                        <label class="input-label">Период</label>
                         <input type="number" class="input-field" id="manual-period" placeholder="1-4" min="1" max="4" readonly>
                     </div>
                     <div class="input-group">
@@ -823,7 +826,7 @@
                 </div>
                 
                 <div class="score-container">
-                    <h3 class="score-title">Распознанный счет по четвертям</h3>
+                    <h3 class="score-title">Распознанный счет по периодам</h3>
                     <div class="team-score team1">
                         <span class="team-name" id="team1-name">Команда 1</span>
                         <div class="quarters">
@@ -853,7 +856,7 @@
                         <span class="ocr-value" id="ocr-score">--</span>
                     </div>
                     <div class="ocr-item">
-                        <span class="ocr-label">Четверть:</span>
+                        <span class="ocr-label">Период:</span>
                         <span class="ocr-value" id="ocr-period">--</span>
                     </div>
                     <div class="ocr-item">
@@ -1047,6 +1050,16 @@
             let isDarkTheme = localStorage.getItem('darkTheme') === 'true';
             let totalType = 'over';
             let teamNames = ['Команда 1', 'Команда 2'];
+            
+            // Базы данных темпов игры для разных лиг
+            const leaguePaceData = {
+                '12_4': 2.15, // NBA
+                '10_4': 1.65, // ФИБА
+                '12_4_3x3': 1.8, // 3×3 (4×12 мин)
+                '10_4_3x3': 1.5, // 3×3 (4×10 мин)
+                '10_2_4x4': 1.7, // 4×4 (2×10 мин)
+                '5_4_cyber': 2.0  // Кибербаскетбол
+            };
             
             // Apply saved theme
             if (isDarkTheme) {
@@ -1327,6 +1340,56 @@
                 progressFill.style.width = `${percent}%`;
             }
             
+            // Функция для получения параметров лиги
+            function getLeagueParams() {
+                const leagueValue = leagueSelect.value;
+                let periodLength, totalPeriods, overtimeLength;
+                
+                switch(leagueValue) {
+                    case '12_4': // NBA
+                        periodLength = 12;
+                        totalPeriods = 4;
+                        overtimeLength = 5;
+                        break;
+                    case '10_4': // ФИБА
+                        periodLength = 10;
+                        totalPeriods = 4;
+                        overtimeLength = 5;
+                        break;
+                    case '12_4_3x3': // 3×3 (4×12 мин)
+                        periodLength = 12;
+                        totalPeriods = 4;
+                        overtimeLength = 2;
+                        break;
+                    case '10_4_3x3': // 3×3 (4×10 мин)
+                        periodLength = 10;
+                        totalPeriods = 4;
+                        overtimeLength = 2;
+                        break;
+                    case '10_2_4x4': // 4×4 (2×10 мин)
+                        periodLength = 10;
+                        totalPeriods = 2;
+                        overtimeLength = 3;
+                        break;
+                    case '5_4_cyber': // Кибербаскетбол
+                        periodLength = 5;
+                        totalPeriods = 4;
+                        overtimeLength = 2;
+                        break;
+                    default:
+                        periodLength = 10;
+                        totalPeriods = 4;
+                        overtimeLength = 5;
+                }
+                
+                return {
+                    periodLength,
+                    totalPeriods,
+                    overtimeLength,
+                    leaguePace: leaguePaceData[leagueValue] || 1.7
+                };
+            }
+            
             function processImage(file) {
                 const reader = new FileReader();
                 
@@ -1397,9 +1460,9 @@
                 teamNames = scoreData.teamNames;
                 
                 // 2. Поиск четверти и времени
-                const periodTimeRegex = /(\d{1,2}:\d{2})\s*[\(].*?[|]\s*(\d+)-я четверть\s*,\s*(\d{1,2}:\d{2})[\)]/i;
-                const alternativePeriodTimeRegex = /(\d+)-я четверть\s*[,\s]*(\d{1,2}:\d{2})/i;
-                const simplePeriodRegex = /(\d+)-я четверть/i;
+                const periodTimeRegex = /(\d{1,2}:\d{2})\s*[\(].*?[|]\s*(\d+)-я (?:четверть|период|тайм)\s*,\s*(\d{1,2}:\d{2})[\)]/i;
+                const alternativePeriodTimeRegex = /(\d+)-я (?:четверть|период|тайм)\s*[,\s]*(\d{1,2}:\d{2})/i;
+                const simplePeriodRegex = /(\d+)-я (?:четверть|период|тайм)/i;
                 const simpleTimeRegex = /(\d{1,2}:\d{2})\s*[|]/;
                 
                 let periodTimeMatch = text.match(periodTimeRegex);
@@ -1444,7 +1507,7 @@
                         timeElapsed = periodTimeMatch[2];
                     }
                     
-                    document.getElementById('ocr-period').textContent = `${period} четверть`;
+                    document.getElementById('ocr-period').textContent = `${period} период`;
                     document.getElementById('manual-period').value = period;
                     document.getElementById('ocr-time').textContent = timeElapsed;
                     document.getElementById('manual-time').value = timeElapsed;
@@ -1455,7 +1518,7 @@
                     // Если нашли отдельно четверть и время
                     if (periodMatch) {
                         period = parseInt(periodMatch[1]);
-                        document.getElementById('ocr-period').textContent = `${period} четверть`;
+                        document.getElementById('ocr-period').textContent = `${period} период`;
                         document.getElementById('manual-period').value = period;
                     }
                     
@@ -1592,7 +1655,15 @@
             
             // Функция расчета оставшегося времени
             function calculateRemainingTime(period, timeElapsed) {
-                const periodLength = parseInt(leagueSelect.value);
+                const leagueParams = getLeagueParams();
+                const periodLength = leagueParams.periodLength;
+                const totalPeriods = leagueParams.totalPeriods;
+                
+                // Проверяем, что период не превышает общее количество периодов
+                if (period > totalPeriods) {
+                    period = totalPeriods;
+                }
+                
                 const [minutesElapsed, secondsElapsed] = timeElapsed.split(':').map(Number);
                 const totalSecondsElapsed = minutesElapsed * 60 + secondsElapsed;
                 const totalSecondsInPeriod = periodLength * 60;
@@ -1621,7 +1692,7 @@
                 const [score1, score2] = scoreInput.split(':').map(Number);
                 
                 document.getElementById('ocr-score').textContent = `${score1}:${score2}`;
-                document.getElementById('ocr-period').textContent = `${periodInput} четверть`;
+                document.getElementById('ocr-period').textContent = `${periodInput} период`;
                 document.getElementById('ocr-time').textContent = timeInput;
                 
                 // Рассчитываем оставшееся время
@@ -1650,8 +1721,10 @@
             }
             
             function generatePredictions(score1, score2, period, timeElapsed, totalLine, handicapLine, totalType) {
-                const periodLength = parseInt(leagueSelect.value);
-                const totalPeriods = 4;
+                const leagueParams = getLeagueParams();
+                const periodLength = leagueParams.periodLength;
+                const totalPeriods = leagueParams.totalPeriods;
+                const overtimeLength = leagueParams.overtimeLength;
                 
                 // Парсим прошедшее время в четверти
                 const [minutesElapsed, secondsElapsed] = timeElapsed.split(':').map(Number);
@@ -1681,7 +1754,7 @@
                 
                 // Расчет вероятности овертайма
                 let overtimeProbability = 0;
-                if (period === 4 && Math.abs(score1 - score2) <= 5) {
+                if (period === totalPeriods && Math.abs(score1 - score2) <= 5) {
                     overtimeProbability = 30 + (5 - Math.abs(score1 - score2)) * 5;
                     overtimeProbability = Math.min(80, overtimeProbability);
                 }
@@ -1736,8 +1809,10 @@
             }
             
             function updateStatistics(score1, score2, period, timeElapsed, totalLine, handicapLine, totalType) {
-                const periodLength = parseInt(leagueSelect.value);
-                const totalPeriods = 4;
+                const leagueParams = getLeagueParams();
+                const periodLength = leagueParams.periodLength;
+                const totalPeriods = leagueParams.totalPeriods;
+                const leaguePace = leagueParams.leaguePace;
                 
                 // Парсим прошедшее время в четверти
                 const [minutesElapsed, secondsElapsed] = timeElapsed.split(':').map(Number);
@@ -1755,14 +1830,6 @@
                 
                 // Прогресс матча в процентах
                 const matchProgress = Math.round((totalSecondsPlayed / totalSecondsInGame) * 100);
-                
-                // Статистика лиги (условные значения)
-                let leaguePace;
-                switch(leagueSelect.value) {
-                    case '10': leaguePace = 1.65; break; // Евролига, ВТБ
-                    case '12': leaguePace = 2.15; break; // NBA
-                    default: leaguePace = 1.8; // NCAA
-                }
                 
                 // Эффективность атаки (условный расчет)
                 const offensiveEfficiency = (pointsPerMinute / leaguePace * 100).toFixed(1);
