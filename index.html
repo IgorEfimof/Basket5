@@ -1050,6 +1050,7 @@
             let isDarkTheme = localStorage.getItem('darkTheme') === 'true';
             let totalType = 'over';
             let teamNames = ['Команда 1', 'Команда 2'];
+            let currentQuarter = 1;
             
             // Базы данных темпов игры для разных лиг
             const leaguePaceData = {
@@ -1280,6 +1281,13 @@
                 team2Q3.textContent = '-';
                 team2Q4.textContent = '-';
                 team2Total.textContent = '0';
+                
+                // Сбрасываем подсветку текущей четверти
+                const quarters1 = [team1Q1, team1Q2, team1Q3, team1Q4];
+                const quarters2 = [team2Q1, team2Q2, team2Q3, team2Q4];
+                
+                quarters1.forEach(q => q.style.backgroundColor = '');
+                quarters2.forEach(q => q.style.backgroundColor = '');
             }
             
             // Theme toggle functionality
@@ -1499,11 +1507,13 @@
                     // Формат: xx:xx (время начала игры | x-я четверть, xx:xx)
                     if (periodTimeMatch.length >= 4) {
                         // Сложный формат с временем начала игры
-                        period = parseInt(periodTimeMatch[2]);
+                        currentQuarter = parseInt(periodTimeMatch[2]);
+                        period = currentQuarter;
                         timeElapsed = periodTimeMatch[3];
                     } else {
                         // Простой формат: x-я четверть, xx:xx
-                        period = parseInt(periodTimeMatch[1]);
+                        currentQuarter = parseInt(periodTimeMatch[1]);
+                        period = currentQuarter;
                         timeElapsed = periodTimeMatch[2];
                     }
                     
@@ -1517,7 +1527,8 @@
                 } else if (periodMatch || timeMatch) {
                     // Если нашли отдельно четверть и время
                     if (periodMatch) {
-                        period = parseInt(periodMatch[1]);
+                        currentQuarter = parseInt(periodMatch[1]);
+                        period = currentQuarter;
                         document.getElementById('ocr-period').textContent = `${period} период`;
                         document.getElementById('manual-period').value = period;
                     }
@@ -1574,7 +1585,7 @@
                 updateStatistics(score1, score2, period, timeElapsed, total, handicap, detectedTotalType);
             }
             
-            // Функция для извлечения счета из строк
+            // Улучшенная функция для распознавания счета по четвертям
             function extractScoreFromLines(lines) {
                 let team1Name = 'Команда 1';
                 let team2Name = 'Команда 2';
@@ -1583,45 +1594,117 @@
                 let team1Total = 0;
                 let team2Total = 0;
                 
-                // Ищем строки с названиями команд и очками
-                for (let i = 0; i < Math.min(lines.length, 10); i++) {
-                    const line = lines[i];
-                    debugText.innerHTML += `Строка ${i}: "${line}"<br>`;
+                debugText.innerHTML += `=== НАЧАЛО РАСПОЗНАВАНИЯ СЧЕТА ===<br>`;
+                
+                // 1. Поиск паттерна "Название команды XX XX XX XX" (4 числа - очки по четвертям)
+                const quarterScoreRegex = /^([А-Яа-яA-Za-z0-9\s\.\-]+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)(?:\s+(\d+))?$/;
+                
+                // 2. Паттерн для строки с общим счетом в конце
+                const totalScoreRegex = /^([А-Яа-яA-Za-z0-9\s\.\-]+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$/;
+                
+                // 3. Паттерн для компактного формата "Команда XX-XX-XX-XX"
+                const compactScoreRegex = /^([А-Яа-яA-Za-z0-9\s\.\-]+?)\s+(\d+)[\-\s](\d+)[\-\s](\d+)[\-\s](\d+)/;
+                
+                let foundTeams = 0;
+                
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (line.length < 3) continue;
                     
-                    // Ищем числа в строке
-                    const numbers = line.match(/\d+/g);
-                    if (numbers && numbers.length >= 3) {
-                        // Предполагаем, что это строка с очками команды
-                        const scores = numbers.map(Number);
+                    debugText.innerHTML += `Анализ строки ${i}: "${line}"<br>`;
+                    
+                    let match = null;
+                    let scores = [];
+                    
+                    // Пробуем разные паттерны
+                    if (!match) match = line.match(totalScoreRegex);
+                    if (!match) match = line.match(quarterScoreRegex);
+                    if (!match) match = line.match(compactScoreRegex);
+                    
+                    if (match) {
+                        debugText.innerHTML += `✓ Найдена строка с очками!<br>`;
                         
-                        // Если это первая команда (первая найденная строка с очками)
-                        if (team1Total === 0) {
-                            team1Scores = scores.slice(-4); // Берем последние 4 числа
-                            team1Total = team1Scores.reduce((a, b) => a + b, 0);
-                            
-                            // Пытаемся извлечь название команды (текст до чисел)
-                            const nameMatch = line.match(/^([^\d]+)/);
-                            if (nameMatch) {
-                                team1Name = nameMatch[1].trim();
+                        // Извлекаем название команды
+                        const teamName = match[1].trim();
+                        
+                        // Извлекаем очки (может быть 4 или 5 чисел)
+                        for (let j = 2; j < match.length; j++) {
+                            if (match[j] && !isNaN(parseInt(match[j]))) {
+                                scores.push(parseInt(match[j]));
                             }
-                        } 
-                        // Если это вторая команда (вторая найденная строка с очками)
-                        else if (team2Total === 0) {
-                            team2Scores = scores.slice(-4); // Берем последние 4 числа
-                            team2Total = team2Scores.reduce((a, b) => a + b, 0);
+                        }
+                        
+                        debugText.innerHTML += `Название: "${teamName}", Очки: [${scores.join(', ')}]<br>`;
+                        
+                        if (scores.length >= 4) {
+                            // Берем первые 4 числа как очки по четвертям
+                            const quarterScores = scores.slice(0, 4);
+                            const totalScore = scores.length > 4 ? scores[4] : quarterScores.reduce((a, b) => a + b, 0);
                             
-                            // Пытаемся извлечь название команды (текст до чисел)
-                            const nameMatch = line.match(/^([^\d]+)/);
-                            if (nameMatch) {
-                                team2Name = nameMatch[1].trim();
+                            if (foundTeams === 0) {
+                                // Первая команда
+                                team1Name = teamName;
+                                team1Scores = quarterScores;
+                                team1Total = totalScore;
+                                foundTeams++;
+                                debugText.innerHTML += `✓ Команда 1: ${team1Name} [${team1Scores.join(', ')}] Всего: ${team1Total}<br>`;
+                            } else if (foundTeams === 1) {
+                                // Вторая команда
+                                team2Name = teamName;
+                                team2Scores = quarterScores;
+                                team2Total = totalScore;
+                                foundTeams++;
+                                debugText.innerHTML += `✓ Команда 2: ${team2Name} [${team2Scores.join(', ')}] Всего: ${team2Total}<br>`;
+                                break; // Нашли обе команды
                             }
-                            break; // Нашли обе команды, выходим
+                        }
+                    }
+                    
+                    // Дополнительная проверка: ищем строки с разделителями типа "|"
+                    if (!match && line.includes('|')) {
+                        const parts = line.split('|').filter(part => part.trim().length > 0);
+                        if (parts.length >= 2) {
+                            debugText.innerHTML += `✓ Найдена строка с разделителем |<br>`;
+                            
+                            for (let part of parts) {
+                                const numbers = part.match(/\d+/g);
+                                if (numbers && numbers.length >= 4) {
+                                    const teamPart = part.replace(/\d+/g, '').trim();
+                                    if (teamPart.length > 1) {
+                                        const quarterScores = numbers.slice(0, 4).map(Number);
+                                        const totalScore = numbers.length > 4 ? parseInt(numbers[4]) : quarterScores.reduce((a, b) => a + b, 0);
+                                        
+                                        if (foundTeams === 0) {
+                                            team1Name = teamPart;
+                                            team1Scores = quarterScores;
+                                            team1Total = totalScore;
+                                            foundTeams++;
+                                        } else if (foundTeams === 1) {
+                                            team2Name = teamPart;
+                                            team2Scores = quarterScores;
+                                            team2Total = totalScore;
+                                            foundTeams++;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
                 
+                // Если не нашли через регулярки, пробуем альтернативный метод
+                if (foundTeams < 2) {
+                    debugText.innerHTML += `=== АЛЬТЕРНАТИВНЫЙ ПОИСК ===<br>`;
+                    foundTeams = alternativeScoreSearch(lines, team1Name, team2Name, team1Scores, team2Scores);
+                }
+                
                 // Обновляем интерфейс с данными о четвертях
                 updateQuarterScores(team1Name, team2Name, team1Scores, team2Scores, team1Total, team2Total);
+                
+                debugText.innerHTML += `=== РЕЗУЛЬТАТ: ${foundTeams} команд найдено ===<br>`;
+                debugText.innerHTML += `Команда 1: ${team1Name} - ${team1Total} очков<br>`;
+                debugText.innerHTML += `Команда 2: ${team2Name} - ${team2Total} очков<br>`;
                 
                 return {
                     team1Total: team1Total,
@@ -1630,27 +1713,82 @@
                 };
             }
             
-            // Функция обновления интерфейса счета по четвертям
+            // Альтернативный метод поиска счета
+            function alternativeScoreSearch(lines, team1Name, team2Name, team1Scores, team2Scores) {
+                let foundTeams = 0;
+                let team1Total = 0;
+                let team2Total = 0;
+                
+                // Ищем строки с несколькими числами подряд
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    const numbers = line.match(/\d+/g);
+                    
+                    if (numbers && numbers.length >= 4) {
+                        debugText.innerHTML += `Альтернативный поиск: строка ${i} содержит ${numbers.length} чисел<br>`;
+                        
+                        // Пытаемся извлечь название команды (текст до первого числа)
+                        const textBeforeNumbers = line.split(/\d/)[0].trim();
+                        
+                        if (textBeforeNumbers.length > 1) {
+                            const quarterScores = numbers.slice(0, 4).map(Number);
+                            const totalScore = quarterScores.reduce((a, b) => a + b, 0);
+                            
+                            if (foundTeams === 0) {
+                                team1Name = textBeforeNumbers;
+                                team1Scores = quarterScores;
+                                team1Total = totalScore;
+                                foundTeams++;
+                                debugText.innerHTML += `✓ Альтернативно найдена команда 1: ${team1Name}<br>`;
+                            } else if (foundTeams === 1 && textBeforeNumbers !== team1Name) {
+                                team2Name = textBeforeNumbers;
+                                team2Scores = quarterScores;
+                                team2Total = totalScore;
+                                foundTeams++;
+                                debugText.innerHTML += `✓ Альтернативно найдена команда 2: ${team2Name}<br>`;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                return foundTeams;
+            }
+            
+            // Улучшенная функция обновления интерфейса счета по четвертям
             function updateQuarterScores(team1Name, team2Name, team1Scores, team2Scores, team1Total, team2Total) {
-                // Обновляем названия команд
-                document.getElementById('team1-name').textContent = team1Name;
-                document.getElementById('team2-name').textContent = team2Name;
-                document.getElementById('team1-stats-name').textContent = `${team1Name} (PPG)`;
-                document.getElementById('team2-stats-name').textContent = `${team2Name} (PPG)`;
+                // Очищаем предыдущие значения
+                const quarters1 = [team1Q1, team1Q2, team1Q3, team1Q4];
+                const quarters2 = [team2Q1, team2Q2, team2Q3, team2Q4];
+                
+                // Обновляем названия команд (обрезаем слишком длинные)
+                const shortName1 = team1Name.length > 15 ? team1Name.substring(0, 15) + '...' : team1Name;
+                const shortName2 = team2Name.length > 15 ? team2Name.substring(0, 15) + '...' : team2Name;
+                
+                team1Name.textContent = shortName1;
+                team2Name.textContent = shortName2;
+                team1StatsName.textContent = `${shortName1} (PPG)`;
+                team2StatsName.textContent = `${shortName2} (PPG)`;
                 
                 // Обновляем очки по четвертям для команды 1
-                document.getElementById('team1-q1').textContent = team1Scores[0] || '-';
-                document.getElementById('team1-q2').textContent = team1Scores[1] || '-';
-                document.getElementById('team1-q3').textContent = team1Scores[2] || '-';
-                document.getElementById('team1-q4').textContent = team1Scores[3] || '-';
-                document.getElementById('team1-total').textContent = team1Total;
+                team1Scores.forEach((score, index) => {
+                    quarters1[index].textContent = score || '-';
+                    // Подсвечиваем текущую четверть
+                    quarters1[index].style.backgroundColor = index === currentQuarter - 1 ? 'rgba(52, 152, 219, 0.3)' : '';
+                });
+                team1Total.textContent = team1Total;
                 
                 // Обновляем очки по четвертям для команды 2
-                document.getElementById('team2-q1').textContent = team2Scores[0] || '-';
-                document.getElementById('team2-q2').textContent = team2Scores[1] || '-';
-                document.getElementById('team2-q3').textContent = team2Scores[2] || '-';
-                document.getElementById('team2-q4').textContent = team2Scores[3] || '-';
-                document.getElementById('team2-total').textContent = team2Total;
+                team2Scores.forEach((score, index) => {
+                    quarters2[index].textContent = score || '-';
+                    // Подсвечиваем текущую четверть
+                    quarters2[index].style.backgroundColor = index === currentQuarter - 1 ? 'rgba(231, 76, 60, 0.3)' : '';
+                });
+                team2Total.textContent = team2Total;
+                
+                // Добавляем всплывающие подсказки с полными названиями
+                team1Name.title = team1Name;
+                team2Name.title = team2Name;
             }
             
             // Функция расчета оставшегося времени
