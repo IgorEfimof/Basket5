@@ -1574,7 +1574,7 @@
                 updateStatistics(score1, score2, period, timeElapsed, total, handicap, detectedTotalType);
             }
             
-            // Функция для извлечения счета из строк
+            // Функция для извлечения счета из строк - ИСПРАВЛЕННАЯ ВЕРСИЯ
             function extractScoreFromLines(lines) {
                 let team1Name = 'Команда 1';
                 let team2Name = 'Команда 2';
@@ -1583,40 +1583,134 @@
                 let team1Total = 0;
                 let team2Total = 0;
                 
+                let team1Found = false;
+                let team2Found = false;
+                
                 // Ищем строки с названиями команд и очками
-                for (let i = 0; i < Math.min(lines.length, 10); i++) {
-                    const line = lines[i];
-                    debugText.innerHTML += `Строка ${i}: "${line}"<br>`;
+                for (let i = 0; i < Math.min(lines.length, 15); i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
                     
-                    // Ищем числа в строке
+                    debugText.innerHTML += `Анализ строки ${i}: "${line}"<br>`;
+                    
+                    // Улучшенный поиск чисел в строке - ищем последовательности цифр
                     const numbers = line.match(/\d+/g);
                     if (numbers && numbers.length >= 3) {
-                        // Предполагаем, что это строка с очками команды
-                        const scores = numbers.map(Number);
+                        debugText.innerHTML += `Найдены числа: ${numbers.join(', ')}<br>`;
                         
-                        // Если это первая команда (первая найденная строка с очками)
-                        if (team1Total === 0) {
-                            team1Scores = scores.slice(-4); // Берем последние 4 числа
-                            team1Total = team1Scores.reduce((a, b) => a + b, 0);
+                        // Пытаемся извлечь название команды (все до первого числа)
+                        const nameMatch = line.match(/^([^\d]+)/);
+                        let currentTeamName = nameMatch ? nameMatch[1].trim() : `Команда ${team1Found ? '2' : '1'}`;
+                        
+                        // Обрабатываем числа - последние 5 чисел должны быть: Q1, Q2, Q3, Q4, Total
+                        const scores = numbers.map(Number);
+                        let quarterScores = [];
+                        let totalScore = 0;
+                        
+                        if (scores.length >= 5) {
+                            // Берем последние 5 чисел: 4 четверти + тотал
+                            quarterScores = scores.slice(-5, -1); // первые 4 из последних 5
+                            totalScore = scores[scores.length - 1]; // последнее число - тотал
                             
-                            // Пытаемся извлечь название команды (текст до чисел)
-                            const nameMatch = line.match(/^([^\d]+)/);
-                            if (nameMatch) {
-                                team1Name = nameMatch[1].trim();
+                            // Проверяем, что сумма четвертей равна тоталу (с допуском ±3 очка)
+                            const sum = quarterScores.reduce((a, b) => a + b, 0);
+                            if (Math.abs(sum - totalScore) <= 3) {
+                                debugText.innerHTML += `Валидные данные: четверти=${quarterScores.join(', ')}, тотал=${totalScore}<br>`;
+                                
+                                if (!team1Found) {
+                                    team1Name = currentTeamName;
+                                    team1Scores = [...quarterScores];
+                                    // Дополняем до 4 четвертей если нужно
+                                    while (team1Scores.length < 4) team1Scores.push(0);
+                                    team1Total = totalScore;
+                                    team1Found = true;
+                                    debugText.innerHTML += `Найдена команда 1: ${team1Name}<br>`;
+                                } else if (!team2Found) {
+                                    team2Name = currentTeamName;
+                                    team2Scores = [...quarterScores];
+                                    // Дополняем до 4 четвертей если нужно
+                                    while (team2Scores.length < 4) team2Scores.push(0);
+                                    team2Total = totalScore;
+                                    team2Found = true;
+                                    debugText.innerHTML += `Найдена команда 2: ${team2Name}<br>`;
+                                    break; // Нашли обе команды
+                                }
+                            } else {
+                                debugText.innerHTML += `Невалидные данные: сумма четвертей (${sum}) не равна тоталу (${totalScore})<br>`;
                             }
-                        } 
-                        // Если это вторая команда (вторая найденная строка с очками)
-                        else if (team2Total === 0) {
-                            team2Scores = scores.slice(-4); // Берем последние 4 числа
-                            team2Total = team2Scores.reduce((a, b) => a + b, 0);
+                        } else if (scores.length >= 4) {
+                            // Если только 4 числа, предполагаем что это все четверти
+                            quarterScores = scores.slice(-4);
+                            totalScore = quarterScores.reduce((a, b) => a + b, 0);
                             
-                            // Пытаемся извлечь название команды (текст до чисел)
-                            const nameMatch = line.match(/^([^\d]+)/);
-                            if (nameMatch) {
-                                team2Name = nameMatch[1].trim();
+                            debugText.innerHTML += `Только четверти: ${quarterScores.join(', ')}, вычисленный тотал=${totalScore}<br>`;
+                            
+                            if (!team1Found) {
+                                team1Name = currentTeamName;
+                                team1Scores = [...quarterScores];
+                                team1Total = totalScore;
+                                team1Found = true;
+                                debugText.innerHTML += `Найдена команда 1: ${team1Name}<br>`;
+                            } else if (!team2Found) {
+                                team2Name = currentTeamName;
+                                team2Scores = [...quarterScores];
+                                team2Total = totalScore;
+                                team2Found = true;
+                                debugText.innerHTML += `Найдена команда 2: ${team2Name}<br>`;
+                                break; // Нашли обе команды
                             }
-                            break; // Нашли обе команды, выходим
                         }
+                    } else {
+                        // Пытаемся найти данные в формате "Название10203040100" (без пробелов)
+                        const combinedMatch = line.match(/^([^\d]+)(\d+)$/);
+                        if (combinedMatch) {
+                            const [, namePart, numbersPart] = combinedMatch;
+                            debugText.innerHTML += `Комбинированный формат: название="${namePart}", цифры="${numbersPart}"<br>`;
+                            
+                            // Пытаемся разбить цифры на четверти (по 2 цифры на четверть)
+                            const digits = numbersPart.split('').map(Number);
+                            if (digits.length >= 8) { // Минимум 8 цифр: 4×2 цифры на четверть
+                                let quarterScores = [];
+                                for (let j = 0; j < 4; j++) {
+                                    if (j * 2 + 1 < digits.length) {
+                                        const score = digits[j * 2] * 10 + digits[j * 2 + 1];
+                                        quarterScores.push(score);
+                                    }
+                                }
+                                
+                                if (quarterScores.length === 4) {
+                                    const totalScore = quarterScores.reduce((a, b) => a + b, 0);
+                                    debugText.innerHTML += `Разобрано по 2 цифры: четверти=${quarterScores.join(', ')}, тотал=${totalScore}<br>`;
+                                    
+                                    if (!team1Found) {
+                                        team1Name = namePart.trim();
+                                        team1Scores = quarterScores;
+                                        team1Total = totalScore;
+                                        team1Found = true;
+                                    } else if (!team2Found) {
+                                        team2Name = namePart.trim();
+                                        team2Scores = quarterScores;
+                                        team2Total = totalScore;
+                                        team2Found = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Если не нашли данные обычным способом, попробуем альтернативный метод
+                if (!team1Found || !team2Found) {
+                    debugText.innerHTML += `Пытаемся альтернативный метод поиска...<br>`;
+                    const altResult = extractScoreAlternative(lines);
+                    if (altResult.team1Total > 0 || altResult.team2Total > 0) {
+                        team1Name = altResult.teamNames[0];
+                        team2Name = altResult.teamNames[1];
+                        team1Scores = altResult.team1Scores;
+                        team2Scores = altResult.team2Scores;
+                        team1Total = altResult.team1Total;
+                        team2Total = altResult.team2Total;
                     }
                 }
                 
@@ -1630,27 +1724,102 @@
                 };
             }
             
+            // Альтернативный метод поиска счета
+            function extractScoreAlternative(lines) {
+                let team1Name = 'Команда 1';
+                let team2Name = 'Команда 2';
+                let team1Scores = [0, 0, 0, 0];
+                let team2Scores = [0, 0, 0, 0];
+                let team1Total = 0;
+                let team2Total = 0;
+                
+                // Объединяем весь текст и ищем паттерны
+                const fullText = lines.join(' ');
+                debugText.innerHTML += `Полный текст: ${fullText}<br>`;
+                
+                // Ищем паттерны типа "Команда1 10 20 30 40 100"
+                const teamPattern = /([^\d]+?)(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/g;
+                let match;
+                let teamCount = 0;
+                
+                while ((match = teamPattern.exec(fullText)) !== null && teamCount < 2) {
+                    const [, name, q1, q2, q3, q4, total] = match;
+                    debugText.innerHTML += `Найдена команда: ${name} - ${q1},${q2},${q3},${q4} = ${total}<br>`;
+                    
+                    if (teamCount === 0) {
+                        team1Name = name.trim();
+                        team1Scores = [parseInt(q1), parseInt(q2), parseInt(q3), parseInt(q4)];
+                        team1Total = parseInt(total);
+                        teamCount++;
+                    } else {
+                        team2Name = name.trim();
+                        team2Scores = [parseInt(q1), parseInt(q2), parseInt(q3), parseInt(q4)];
+                        team2Total = parseInt(total);
+                        teamCount++;
+                        break;
+                    }
+                }
+                
+                // Если не нашли, пытаемся найти просто числа подряд
+                if (teamCount < 2) {
+                    const allNumbers = fullText.match(/\d+/g);
+                    if (allNumbers && allNumbers.length >= 8) {
+                        debugText.innerHTML += `Все числа в тексте: ${allNumbers.join(', ')}<br>`;
+                        
+                        // Пытаемся найти 8 последовательных чисел (4 четверти × 2 команды)
+                        for (let i = 0; i <= allNumbers.length - 8; i++) {
+                            const numbers = allNumbers.slice(i, i + 8).map(Number);
+                            const team1Quarters = numbers.slice(0, 4);
+                            const team2Quarters = numbers.slice(4, 8);
+                            const team1Total = team1Quarters.reduce((a, b) => a + b, 0);
+                            const team2Total = team2Quarters.reduce((a, b) => a + b, 0);
+                            
+                            // Проверяем, что числа выглядят реалистично для баскетбола
+                            if (team1Quarters.every(score => score >= 0 && score <= 50) && 
+                                team2Quarters.every(score => score >= 0 && score <= 50)) {
+                                
+                                debugText.innerHTML += `Найдены реалистичные четверти: Ком1=${team1Quarters.join(',')} (${team1Total}), Ком2=${team2Quarters.join(',')} (${team2Total})<br>`;
+                                
+                                team1Scores = team1Quarters;
+                                team2Scores = team2Quarters;
+                                team1Total = team1Total;
+                                team2Total = team2Total;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                return {
+                    team1Scores,
+                    team2Scores,
+                    team1Total,
+                    team2Total,
+                    teamNames: [team1Name, team2Name]
+                };
+            }
+            
             // Функция обновления интерфейса счета по четвертям
             function updateQuarterScores(team1Name, team2Name, team1Scores, team2Scores, team1Total, team2Total) {
                 // Обновляем названия команд
-                document.getElementById('team1-name').textContent = team1Name;
-                document.getElementById('team2-name').textContent = team2Name;
-                document.getElementById('team1-stats-name').textContent = `${team1Name} (PPG)`;
-                document.getElementById('team2-stats-name').textContent = `${team2Name} (PPG)`;
+                team1Name.textContent = team1Name;
+                team2Name.textContent = team2Name;
+                team1StatsName.textContent = `${team1Name} (PPG)`;
+                team2StatsName.textContent = `${team2Name} (PPG)`;
                 
                 // Обновляем очки по четвертям для команды 1
-                document.getElementById('team1-q1').textContent = team1Scores[0] || '-';
-                document.getElementById('team1-q2').textContent = team1Scores[1] || '-';
-                document.getElementById('team1-q3').textContent = team1Scores[2] || '-';
-                document.getElementById('team1-q4').textContent = team1Scores[3] || '-';
-                document.getElementById('team1-total').textContent = team1Total;
+                team1Q1.textContent = team1Scores[0] || '-';
+                team1Q2.textContent = team1Scores[1] || '-';
+                team1Q3.textContent = team1Scores[2] || '-';
+                team1Q4.textContent = team1Scores[3] || '-';
+                team1Total.textContent = team1Total || '0';
                 
                 // Обновляем очки по четвертям для команды 2
-                document.getElementById('team2-q1').textContent = team2Scores[0] || '-';
-                document.getElementById('team2-q2').textContent = team2Scores[1] || '-';
-                document.getElementById('team2-q3').textContent = team2Scores[2] || '-';
-                document.getElementById('team2-q4').textContent = team2Scores[3] || '-';
-                document.getElementById('team2-total').textContent = team2Total;
+                team2Q1.textContent = team2Scores[0] || '-';
+                team2Q2.textContent = team2Scores[1] || '-';
+                team2Q3.textContent = team2Scores[2] || '-';
+                team2Q4.textContent = team2Scores[3] || '-';
+                team2Total.textContent = team2Total || '0';
             }
             
             // Функция расчета оставшегося времени
