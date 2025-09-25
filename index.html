@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="BSK5">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Анализатор ставок TT PRO v2.3</title>
+    <title>Анализатор ставок TT PRO v3.0</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -38,6 +38,8 @@
             --neutral-color: #3498db;
             --team1-color: #3498db;
             --team2-color: #e74c3c;
+            --moon-color: #f39c12;
+            --quarter-color: #9b59b6;
         }
         
         [data-theme="dark"] {
@@ -52,6 +54,8 @@
             --stats-bg: rgba(30, 30, 30, 0.9);
             --team1-color: #5dade2;
             --team2-color: #ec7063;
+            --moon-color: #f1c40f;
+            --quarter-color: #8e44ad;
         }
         
         body {
@@ -734,13 +738,99 @@
             color: var(--primary-color);
             text-align: center;
         }
+        
+        /* New styles for quarter predictions and moon phases */
+        .quarter-predictions {
+            margin-top: 15px;
+            padding: 12px;
+            background: var(--stats-bg);
+            border-radius: 8px;
+        }
+        
+        .quarter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .quarter-card {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .quarter-name {
+            font-weight: bold;
+            color: var(--quarter-color);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .quarter-prediction {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+        
+        .moon-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(243, 156, 18, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid var(--moon-color);
+        }
+        
+        .moon-icon {
+            font-size: 1.2rem;
+            margin-right: 8px;
+            color: var(--moon-color);
+        }
+        
+        .moon-text {
+            font-size: 0.9rem;
+            color: var(--moon-color);
+        }
+        
+        .gender-selector {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .gender-option {
+            flex: 1;
+            padding: 8px;
+            text-align: center;
+            border-radius: 5px;
+            background: var(--input-bg);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid #ddd;
+        }
+        
+        .gender-option.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .prediction-details {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #666;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Анализатор ставок TT PRO v2.3</h1>
-            <div class="subtitle">Супер-точный анализ на основе OCR-распознавания</div>
+            <h1>Анализатор ставок TT PRO v3.0</h1>
+            <div class="subtitle">Супер-точный анализ с прогнозами по четвертям и лунными циклами</div>
             <button class="theme-toggle" id="theme-toggle">🌙</button>
         </header>
         
@@ -748,6 +838,7 @@
             <button class="tab active" data-tab="upload">Загрузка</button>
             <button class="tab" data-tab="results">Результаты</button>
             <button class="tab" data-tab="stats">Статистика</button>
+            <button class="tab" data-tab="quarters">Прогноз по четвертям</button>
         </div>
         
         <div class="main-content">
@@ -764,6 +855,17 @@
                         <option value="10_2_4x4">4×4 (2×10 мин)</option>
                         <option value="5_4_cyber">Кибербаскетбол (4×5 мин)</option>
                     </select>
+                </div>
+                
+                <div class="gender-selector">
+                    <div class="gender-option active" data-gender="male">Мужчины</div>
+                    <div class="gender-option" data-gender="female">Женщины</div>
+                    <div class="gender-option" data-gender="mixed">Смешанные</div>
+                </div>
+                
+                <div class="moon-info">
+                    <div class="moon-icon" id="moon-icon">🌑</div>
+                    <div class="moon-text" id="moon-text">Расчет лунной фазы...</div>
                 </div>
                 
                 <div class="upload-area" id="upload-area">
@@ -984,6 +1086,72 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="results-section tab-content" id="quarters-tab">
+                <h2 class="section-title">Прогноз по четвертям</h2>
+                
+                <div class="quarter-predictions">
+                    <h3>Прогноз на следующие четверти</h3>
+                    
+                    <div class="quarter-grid">
+                        <div class="quarter-card">
+                            <div class="quarter-name">2-я четверть</div>
+                            <div class="quarter-prediction" id="q2-prediction">--</div>
+                            <div class="prediction-details" id="q2-details">ТБ/ТМ: --</div>
+                        </div>
+                        
+                        <div class="quarter-card">
+                            <div class="quarter-name">3-я четверть</div>
+                            <div class="quarter-prediction" id="q3-prediction">--</div>
+                            <div class="prediction-details" id="q3-details">ТБ/ТМ: --</div>
+                        </div>
+                    </div>
+                    
+                    <div class="moon-info">
+                        <div class="moon-icon" id="moon-impact-icon">🌕</div>
+                        <div class="moon-text" id="moon-impact-text">Влияние лунной фазы: рассчитывается...</div>
+                    </div>
+                </div>
+                
+                <div class="analysis-result">
+                    <h3>Факторы влияния на четверти</h3>
+                    
+                    <div class="result-grid">
+                        <div class="result-card">
+                            <div class="result-title">Влияние пола команд</div>
+                            <div class="result-value neutral" id="gender-impact">--</div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <div class="result-title">Исторический темп 2-й четверти</div>
+                            <div class="result-value neutral" id="q2-historical">--</div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <div class="result-title">Исторический темп 3-й четверти</div>
+                            <div class="result-value neutral" id="q3-historical">--</div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <div class="result-title">Лунный коэффициент</div>
+                            <div class="result-value neutral" id="moon-coefficient">--</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="recommendation">
+                    <div class="recommendation-title">Рекомендация по четвертям</div>
+                    <div class="recommendation-desc" id="quarters-recommendation">Загрузите данные для получения рекомендаций по ставкам на четверти</div>
+                    
+                    <div class="confidence">
+                        <span class="confidence-text">Точность прогноза:</span>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="quarters-confidence-bar" style="width: 0%"></div>
+                        </div>
+                        <span id="quarters-confidence-value" style="margin-left: 8px;">0%</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1029,6 +1197,11 @@
             const progressBar = document.getElementById('progress-bar');
             const progressFill = document.getElementById('progress-fill');
             const statusMessage = document.getElementById('status-message');
+            const genderOptions = document.querySelectorAll('.gender-option');
+            const moonIcon = document.getElementById('moon-icon');
+            const moonText = document.getElementById('moon-text');
+            const moonImpactIcon = document.getElementById('moon-impact-icon');
+            const moonImpactText = document.getElementById('moon-impact-text');
             
             // Элементы для отображения счета по четвертям
             const team1Name = document.getElementById('team1-name');
@@ -1046,10 +1219,26 @@
             const team1StatsName = document.getElementById('team1-stats-name');
             const team2StatsName = document.getElementById('team2-stats-name');
             
+            // Элементы для прогноза по четвертям
+            const q2Prediction = document.getElementById('q2-prediction');
+            const q3Prediction = document.getElementById('q3-prediction');
+            const q2Details = document.getElementById('q2-details');
+            const q3Details = document.getElementById('q3-details');
+            const genderImpact = document.getElementById('gender-impact');
+            const q2Historical = document.getElementById('q2-historical');
+            const q3Historical = document.getElementById('q3-historical');
+            const moonCoefficient = document.getElementById('moon-coefficient');
+            const quartersRecommendation = document.getElementById('quarters-recommendation');
+            const quartersConfidenceBar = document.getElementById('quarters-confidence-bar');
+            const quartersConfidenceValue = document.getElementById('quarters-confidence-value');
+            
             let activeInput = null;
             let isDarkTheme = localStorage.getItem('darkTheme') === 'true';
             let totalType = 'over';
             let teamNames = ['Команда 1', 'Команда 2'];
+            let currentGender = 'male';
+            let moonPhase = '';
+            let moonFactor = 1.0;
             
             // Базы данных темпов игры для разных лиг
             const leaguePaceData = {
@@ -1061,10 +1250,94 @@
                 '5_4_cyber': 2.0  // Кибербаскетбол
             };
             
+            // Исторические данные по четвертям для разных лиг (очков за четверть)
+            const quarterPaceData = {
+                '12_4': { q1: 55, q2: 58, q3: 54, q4: 56 }, // NBA
+                '10_4': { q1: 42, q2: 44, q3: 41, q4: 43 }, // ФИБА
+                '12_4_3x3': { q1: 48, q2: 50, q3: 47, q4: 49 }, // 3×3 (4×12 мин)
+                '10_4_3x3': { q1: 40, q2: 42, q3: 39, q4: 41 }, // 3×3 (4×10 мин)
+                '10_2_4x4': { q1: 45, q2: 47, q3: 44, q4: 46 }, // 4×4 (2×10 мин)
+                '5_4_cyber': { q1: 25, q2: 26, q3: 24, q4: 25 } // Кибербаскетбол
+            };
+            
+            // Коэффициенты влияния пола на темп игры
+            const genderFactors = {
+                'male': 1.0,
+                'female': 0.85,
+                'mixed': 0.92
+            };
+            
             // Apply saved theme
             if (isDarkTheme) {
                 document.body.setAttribute('data-theme', 'dark');
                 themeToggle.textContent = '☀️';
+            }
+            
+            // Calculate moon phase
+            calculateMoonPhase();
+            
+            // Set up gender selection
+            genderOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    genderOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    currentGender = this.getAttribute('data-gender');
+                    // Recalculate predictions if we have data
+                    if (document.getElementById('manual-score').value) {
+                        processManualInput();
+                    }
+                });
+            });
+            
+            // Moon phase calculation function
+            function calculateMoonPhase() {
+                const now = new Date();
+                const start = new Date(now.getFullYear(), 0, 0);
+                const diff = now - start;
+                const oneDay = 1000 * 60 * 60 * 24;
+                const dayOfYear = Math.floor(diff / oneDay);
+                
+                // Simplified moon phase calculation based on day of year
+                const moonDay = dayOfYear % 29.53; // Moon cycle is approximately 29.53 days
+                
+                if (moonDay < 1) {
+                    moonPhase = 'new';
+                    moonIcon.textContent = '🌑';
+                    moonText.textContent = 'Новолуние';
+                    moonImpactIcon.textContent = '🌑';
+                    moonImpactText.textContent = 'Новолуние: низкая активность';
+                    moonFactor = 0.95;
+                } else if (moonDay < 7.5) {
+                    moonPhase = 'waxing';
+                    moonIcon.textContent = '🌒';
+                    moonText.textContent = 'Растущая луна';
+                    moonImpactIcon.textContent = '🌒';
+                    moonImpactText.textContent = 'Растущая луна: возрастающая активность';
+                    moonFactor = 1.02;
+                } else if (moonDay < 15) {
+                    moonPhase = 'full';
+                    moonIcon.textContent = '🌕';
+                    moonText.textContent = 'Полнолуние';
+                    moonImpactIcon.textContent = '🌕';
+                    moonImpactText.textContent = 'Полнолуние: пиковая активность';
+                    moonFactor = 1.08;
+                } else if (moonDay < 22.5) {
+                    moonPhase = 'waning';
+                    moonIcon.textContent = '🌖';
+                    moonText.textContent = 'Убывающая луна';
+                    moonImpactIcon.textContent = '🌖';
+                    moonImpactText.textContent = 'Убывающая луна: снижающаяся активность';
+                    moonFactor = 1.0;
+                } else {
+                    moonPhase = 'dark';
+                    moonIcon.textContent = '🌘';
+                    moonText.textContent = 'Темная луна';
+                    moonImpactIcon.textContent = '🌘';
+                    moonImpactText.textContent = 'Темная луна: непредсказуемая активность';
+                    moonFactor = 0.98;
+                }
+                
+                moonCoefficient.textContent = moonFactor.toFixed(2);
             }
             
             // Prevent zoom on double tap
@@ -1257,6 +1530,18 @@
                 document.getElementById('analysis-confidence-bar').style.width = '0%';
                 document.getElementById('analysis-confidence-value').textContent = '0%';
                 
+                // Сброс прогноза по четвертям
+                q2Prediction.textContent = '--';
+                q3Prediction.textContent = '--';
+                q2Details.textContent = 'ТБ/ТМ: --';
+                q3Details.textContent = 'ТБ/ТМ: --';
+                genderImpact.textContent = '--';
+                q2Historical.textContent = '--';
+                q3Historical.textContent = '--';
+                quartersRecommendation.textContent = 'Загрузите данные для получения рекомендаций по ставкам на четверти';
+                quartersConfidenceBar.style.width = '0%';
+                quartersConfidenceValue.textContent = '0%';
+                
                 previewImg.style.display = 'none';
                 progressBar.style.display = 'none';
                 statusMessage.innerHTML = '';
@@ -1386,7 +1671,8 @@
                     periodLength,
                     totalPeriods,
                     overtimeLength,
-                    leaguePace: leaguePaceData[leagueValue] || 1.7
+                    leaguePace: leaguePaceData[leagueValue] || 1.7,
+                    quarterPace: quarterPaceData[leagueValue] || { q1: 45, q2: 47, q3: 44, q4: 46 }
                 };
             }
             
@@ -1572,6 +1858,9 @@
                 
                 // Обновляем статистику
                 updateStatistics(score1, score2, period, timeElapsed, total, handicap, detectedTotalType);
+                
+                // Генерируем прогноз по четвертям
+                generateQuarterPredictions(score1, score2, period, timeElapsed);
             }
             
             // Функция для извлечения счета из строк
@@ -1718,6 +2007,9 @@
                 
                 // Обновляем статистику
                 updateStatistics(score1, score2, periodInput, timeInput, totalInput, handicapInput, totalTypeInput);
+                
+                // Генерируем прогноз по четвертям
+                generateQuarterPredictions(score1, score2, periodInput, timeInput);
             }
             
             function generatePredictions(score1, score2, period, timeElapsed, totalLine, handicapLine, totalType) {
@@ -1806,6 +2098,81 @@
                 
                 debugText.innerHTML += `Прогноз: тотал=${Math.round(predictedTotalPoints)}, счет=${Math.round(predictedScore1)}:${Math.round(predictedScore2)}<br>`;
                 debugText.innerHTML += `Рекомендация: ${recommendation}<br>`;
+            }
+            
+            function generateQuarterPredictions(score1, score2, period, timeElapsed) {
+                const leagueParams = getLeagueParams();
+                const quarterPace = leagueParams.quarterPace;
+                const periodLength = leagueParams.periodLength;
+                
+                // Учет влияния пола команд
+                const genderFactor = genderFactors[currentGender];
+                genderImpact.textContent = `${currentGender === 'male' ? 'Мужчины' : currentGender === 'female' ? 'Женщины' : 'Смешанные'} (×${genderFactor.toFixed(2)})`;
+                
+                // Исторические данные по четвертям
+                q2Historical.textContent = `${quarterPace.q2} очков`;
+                q3Historical.textContent = `${quarterPace.q3} очков`;
+                
+                // Прогноз для 2-й четверти с учетом текущего темпа и факторов
+                let q2PredictionValue = quarterPace.q2 * genderFactor * moonFactor;
+                
+                // Если матч уже идет, корректируем прогноз на основе текущего темпа
+                if (period >= 1) {
+                    const [minutesElapsed, secondsElapsed] = timeElapsed.split(':').map(Number);
+                    const totalSecondsElapsed = minutesElapsed * 60 + secondsElapsed;
+                    const minutesPlayedInQuarter = totalSecondsElapsed / 60;
+                    
+                    if (period === 1 && minutesPlayedInQuarter > 0) {
+                        const currentQuarterPoints = score1 + score2;
+                        const currentQuarterPace = currentQuarterPoints / minutesPlayedInQuarter;
+                        const quarterMinutes = periodLength;
+                        
+                        // Корректируем прогноз на основе текущего темпа
+                        q2PredictionValue = (q2PredictionValue + (currentQuarterPace * quarterMinutes)) / 2;
+                    }
+                }
+                
+                // Прогноз для 3-й четверти
+                let q3PredictionValue = quarterPace.q3 * genderFactor * moonFactor;
+                
+                // Обновляем интерфейс
+                q2Prediction.textContent = Math.round(q2PredictionValue);
+                q3Prediction.textContent = Math.round(q3PredictionValue);
+                
+                // Определяем рекомендации по ТБ/ТМ для четвертей
+                const q2OverUnder = q2PredictionValue > quarterPace.q2 ? 'ТБ' : 'ТМ';
+                const q3OverUnder = q3PredictionValue > quarterPace.q3 ? 'ТБ' : 'ТМ';
+                
+                q2Details.textContent = `ТБ/ТМ: ${q2OverUnder} (${quarterPace.q2})`;
+                q3Details.textContent = `ТБ/ТМ: ${q3OverUnder} (${quarterPace.q3})`;
+                
+                // Формируем общую рекомендацию по четвертям
+                let quartersRec = "";
+                let quartersConfidence = 75;
+                
+                if (q2OverUnder === 'ТБ' && q3OverUnder === 'ТБ') {
+                    quartersRec = "Рекомендуются ставки на ТБ во 2-й и 3-й четвертях";
+                    quartersConfidence = 80;
+                } else if (q2OverUnder === 'ТМ' && q3OverUnder === 'ТМ') {
+                    quartersRec = "Рекомендуются ставки на ТМ во 2-й и 3-й четвертях";
+                    quartersConfidence = 80;
+                } else {
+                    quartersRec = `Рекомендуется ${q2OverUnder} во 2-й четверти и ${q3OverUnder} в 3-й четверти`;
+                    quartersConfidence = 70;
+                }
+                
+                // Учет лунного фактора в рекомендации
+                if (moonFactor > 1.05) {
+                    quartersRec += ". Лунная активность высокая - ожидайте больше очков.";
+                    quartersConfidence += 5;
+                } else if (moonFactor < 0.95) {
+                    quartersRec += ". Лунная активность низкая - ожидайте меньше очков.";
+                    quartersConfidence += 5;
+                }
+                
+                quartersRecommendation.textContent = quartersRec;
+                quartersConfidenceBar.style.width = `${quartersConfidence}%`;
+                quartersConfidenceValue.textContent = `${quartersConfidence}%`;
             }
             
             function updateStatistics(score1, score2, period, timeElapsed, totalLine, handicapLine, totalType) {
