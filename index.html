@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="BSK5">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Анализатор ставок TT PRO v2.4</title>
+    <title>Анализатор ставок TT PRO v2.3</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -739,7 +739,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Анализатор ставок TT PRO v2.4</h1>
+            <h1>Анализатор ставок TT PRO v2.3</h1>
             <div class="subtitle">Супер-точный анализ на основе OCR-распознавания</div>
             <button class="theme-toggle" id="theme-toggle">🌙</button>
         </header>
@@ -1394,143 +1394,67 @@
                 const reader = new FileReader();
                 
                 reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        // Предобработка изображения перед OCR
-                        preprocessImage(img, function(processedBlob) {
-                            previewImg.src = URL.createObjectURL(processedBlob);
-                            previewImg.style.display = 'block';
-                            
-                            // Показываем индикатор загрузки
-                            document.getElementById('ocr-score').innerHTML = '<span class="loading"></span>';
-                            document.getElementById('ocr-period').innerHTML = '<span class="loading"></span>';
-                            document.getElementById('ocr-time').innerHTML = '<span class="loading"></span>';
-                            document.getElementById('ocr-time-remaining').innerHTML = '<span class="loading"></span>';
-                            document.getElementById('ocr-total').innerHTML = '<span class="loading"></span>';
-                            document.getElementById('ocr-total-type').innerHTML = '<span class="loading"></span>';
-                            document.getElementById('ocr-handicap').innerHTML = '<span class="loading"></span>';
-                            
-                            resetQuarterScores();
-                            
-                            showStatus('Начинаем распознавание текста...', 'success');
-                            updateProgress(10);
-                            
-                            // Улучшенное распознавание с настройками для цифр
-                            Tesseract.recognize(
-                                processedBlob,
-                                'rus+eng',
-                                { 
-                                    logger: m => {
-                                        if (m.status === 'recognizing text') {
-                                            const progress = Math.round(m.progress * 100);
-                                            updateProgress(10 + progress * 0.8);
-                                            debugInfo.style.display = 'block';
-                                            debugText.innerHTML += `Распознавание: ${progress}%<br>`;
-                                        }
-                                    },
-                                    // Ключевые улучшения для распознавания цифр:
-                                    tessedit_pageseg_mode: '6', // Единый текстовый блок
-                                    tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ.-:()|, ',
-                                    tessedit_ocr_engine_mode: '1' // Только движок LSTM
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    
+                    // Показываем индикатор загрузки
+                    document.getElementById('ocr-score').innerHTML = '<span class="loading"></span>';
+                    document.getElementById('ocr-period').innerHTML = '<span class="loading"></span>';
+                    document.getElementById('ocr-time').innerHTML = '<span class="loading"></span>';
+                    document.getElementById('ocr-time-remaining').innerHTML = '<span class="loading"></span>';
+                    document.getElementById('ocr-total').innerHTML = '<span class="loading"></span>';
+                    document.getElementById('ocr-total-type').innerHTML = '<span class="loading"></span>';
+                    document.getElementById('ocr-handicap').innerHTML = '<span class="loading"></span>';
+                    
+                    // Сброс счета по четвертям перед новым распознаванием
+                    resetQuarterScores();
+                    
+                    showStatus('Начинаем распознавание текста...', 'success');
+                    updateProgress(10);
+                    
+                    // Запускаем распознавание текста с помощью Tesseract
+                    Tesseract.recognize(
+                        file,
+                        'rus+eng',
+                        { 
+                            logger: m => {
+                                if (m.status === 'recognizing text') {
+                                    const progress = Math.round(m.progress * 100);
+                                    updateProgress(10 + progress * 0.8);
+                                    debugInfo.style.display = 'block';
+                                    debugText.innerHTML += `Распознавание: ${progress}%<br>`;
                                 }
-                            ).then(({ data: { text, lines } }) => {
-                                updateProgress(95);
-                                debugText.innerHTML += `Распознанный текст:<br><textarea rows="5" style="width:100%">${text}</textarea><br>`;
-                                showStatus('Текст распознан, анализируем данные...', 'success');
-                                
-                                // Используем lines для более точного извлечения данных
-                                processOCRTextWithLines(text, lines);
-                                updateProgress(100);
-                                setTimeout(() => {
-                                    progressBar.style.display = 'none';
-                                    showStatus('Анализ завершен!', 'success');
-                                }, 500);
-                            }).catch(err => {
-                                showStatus('Ошибка при распознавании текста: ' + err.message, 'error');
-                                updateProgress(0);
-                            });
-                        });
-                    };
-                    img.src = e.target.result;
+                            }
+                        }
+                    ).then(({ data: { text } }) => {
+                        updateProgress(95);
+                        debugText.innerHTML += `Распознанный текст:<br><textarea rows="5" style="width:100%">${text}</textarea><br>`;
+                        showStatus('Текст распознан, анализируем данные...', 'success');
+                        processOCRText(text);
+                        updateProgress(100);
+                        setTimeout(() => {
+                            progressBar.style.display = 'none';
+                            showStatus('Анализ завершен!', 'success');
+                        }, 500);
+                    }).catch(err => {
+                        showStatus('Ошибка при распознавании текста: ' + err.message, 'error');
+                        updateProgress(0);
+                    });
                 };
                 
                 reader.readAsDataURL(file);
             }
-
-            // Функция предобработки изображения
-            function preprocessImage(img, callback) {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                // Увеличиваем размер для лучшего распознавания
-                const scale = 2;
-                canvas.width = img.width * scale;
-                canvas.height = img.height * scale;
-                
-                // Рисуем изображение с увеличением
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                // Получаем данные пикселей
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const data = imageData.data;
-                
-                // Применяем фильтры: ч/б и повышение контраста
-                for (let i = 0; i < data.length; i += 4) {
-                    const r = data[i];
-                    const g = data[i + 1];
-                    const b = data[i + 2];
-                    
-                    // Преобразование в grayscale
-                    const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-                    
-                    // Повышение контраста (бинаризация)
-                    const threshold = 128;
-                    const binary = gray > threshold ? 255 : 0;
-                    
-                    data[i] = binary;     // red
-                    data[i + 1] = binary; // green
-                    data[i + 2] = binary; // blue
-                    // alpha остается без изменений
-                }
-                
-                // Помещаем обработанное изображение обратно
-                ctx.putImageData(imageData, 0, 0);
-                
-                // Конвертируем в blob
-                canvas.toBlob(blob => {
-                    callback(blob);
-                }, 'image/jpeg', 0.8);
-            }
-
-            // Функция очистки текста от ошибок OCR
-            function cleanOCRText(text) {
-                // Заменяем частые ошибки OCR
-                return text
-                    .replace(/[OО]/g, '0') // Латинская O и кириллическая О → 0
-                    .replace(/[lI]/g, '1') // l и I → 1
-                    .replace(/[Z]/g, '2')  // Z → 2
-                    .replace(/[S]/g, '5')  // S → 5
-                    .replace(/[B]/g, '8')  // B → 8
-                    .replace(/[q]/g, '9')  // q → 9
-                    .replace(/[ТT]/g, '7') // Т и T → 7 (в контексте цифр)
-                    .replace(/\s+/g, ' ')  // Множественные пробелы в один
-                    .trim();
-            }
-
-            // Улучшенная функция обработки OCR с использованием информации о строках
-            function processOCRTextWithLines(text, lines) {
-                // Очистка текста от частых ошибок OCR
-                text = cleanOCRText(text);
-                
-                debugText.innerHTML += `Очищенный текст:<br><textarea rows="5" style="width:100%">${text}</textarea><br>`;
-                
+            
+            function processOCRText(text) {
                 // Разделяем текст на строки
-                const textLines = text.split('\n').filter(line => line.trim() !== '');
+                const lines = text.split('\n').filter(line => line.trim() !== '');
                 
-                debugText.innerHTML += `Всего строк: ${textLines.length}<br>`;
+                debugText.innerHTML += `Всего строк: ${lines.length}<br>`;
                 
-                // 1. Ищем строки с названиями команд и счетами по четвертям
-                const scoreData = extractScoreWithLineAnalysis(textLines, lines);
+                // Улучшенные регулярные выражения для распознавания данных
+                
+                // 1. Поиск счета по четвертям
+                const scoreData = extractScoreFromLines(lines);
                 let score1 = scoreData.team1Total;
                 let score2 = scoreData.team2Total;
                 teamNames = scoreData.teamNames;
@@ -1544,6 +1468,7 @@
                 let periodTimeMatch = text.match(periodTimeRegex);
                 let periodMatch, timeMatch;
                 
+                // Если не нашли сложный формат, ищем альтернативные
                 if (!periodTimeMatch) {
                     periodTimeMatch = text.match(alternativePeriodTimeRegex);
                     if (!periodTimeMatch) {
@@ -1553,7 +1478,7 @@
                 }
                 
                 // 3. Поиск тотала
-                const totalRegex = /Т[МТ]\s*[\(]?\s*([\d.,]+)\s*[\)]?/i;
+                const totalRegex = /Т[М]\s*[\(]?\s*([\d.,]+)\s*[\)]?/i;
                 const alternativeTotalRegex = /Т[О0]?[ТT]?[АA]?[ЛJ]?[^0-9]{0,20}?([\d.,]+)/i;
                 let totalMatch = text.match(totalRegex);
                 if (!totalMatch) totalMatch = text.match(alternativeTotalRegex);
@@ -1567,14 +1492,17 @@
                 debugText.innerHTML += `Найдены данные: счет=${score1 && score2 ? 'да' : 'нет'}, четверть/время=${periodTimeMatch ? 'да' : 'нет'}<br>`;
                 
                 let period = 1, timeElapsed = "00:00", total = 0, handicap = 0;
-                let detectedTotalType = "under";
+                let detectedTotalType = "under"; // По умолчанию ТМ
                 
                 // Обрабатываем период и время
                 if (periodTimeMatch) {
+                    // Формат: xx:xx (время начала игры | x-я четверть, xx:xx)
                     if (periodTimeMatch.length >= 4) {
+                        // Сложный формат с временем начала игры
                         period = parseInt(periodTimeMatch[2]);
                         timeElapsed = periodTimeMatch[3];
                     } else {
+                        // Простой формат: x-я четверть, xx:xx
                         period = parseInt(periodTimeMatch[1]);
                         timeElapsed = periodTimeMatch[2];
                     }
@@ -1584,8 +1512,10 @@
                     document.getElementById('ocr-time').textContent = timeElapsed;
                     document.getElementById('manual-time').value = timeElapsed;
                     
+                    // Рассчитываем оставшееся время
                     calculateRemainingTime(period, timeElapsed);
                 } else if (periodMatch || timeMatch) {
+                    // Если нашли отдельно четверть и время
                     if (periodMatch) {
                         period = parseInt(periodMatch[1]);
                         document.getElementById('ocr-period').textContent = `${period} период`;
@@ -1597,6 +1527,7 @@
                         document.getElementById('ocr-time').textContent = timeElapsed;
                         document.getElementById('manual-time').value = timeElapsed;
                         
+                        // Рассчитываем оставшееся время
                         calculateRemainingTime(period, timeElapsed);
                     }
                 }
@@ -1607,15 +1538,12 @@
                     document.getElementById('ocr-total').textContent = total;
                     document.getElementById('manual-total').value = total;
                     
-                    // Определяем тип тотала по контексту
-                    if (text.match(/Т[БB]/i)) {
-                        detectedTotalType = "over";
-                    }
-                    
+                    // Отображаем тип тотала
                     const totalTypeText = detectedTotalType === 'over' ? 'ТБ' : 'ТМ';
                     const totalTypeClass = detectedTotalType === 'over' ? 'over' : 'under';
                     document.getElementById('ocr-total-type').innerHTML = `<span class="total-type ${totalTypeClass}">${totalTypeText}</span>`;
                     
+                    // Устанавливаем тип тотала в ручном вводе
                     document.getElementById('manual-total-type').value = detectedTotalType;
                     totalType = detectedTotalType;
                 }
@@ -1645,9 +1573,9 @@
                 // Обновляем статистику
                 updateStatistics(score1, score2, period, timeElapsed, total, handicap, detectedTotalType);
             }
-
-            // Улучшенная функция извлечения счета с анализом строк
-            function extractScoreWithLineAnalysis(textLines, ocrLines) {
+            
+            // Функция для извлечения счета из строк
+            function extractScoreFromLines(lines) {
                 let team1Name = 'Команда 1';
                 let team2Name = 'Команда 2';
                 let team1Scores = [0, 0, 0, 0];
@@ -1655,68 +1583,39 @@
                 let team1Total = 0;
                 let team2Total = 0;
                 
-                // Сортируем строки по вертикальной позиции (сверху вниз)
-                if (ocrLines && ocrLines.length > 0) {
-                    const sortedLines = ocrLines.slice().sort((a, b) => a.bbox.y0 - b.bbox.y0);
+                // Ищем строки с названиями команд и очками
+                for (let i = 0; i < Math.min(lines.length, 10); i++) {
+                    const line = lines[i];
+                    debugText.innerHTML += `Строка ${i}: "${line}"<br>`;
                     
-                    // Ищем строки с 4+ числами (скорее всего, счет по четвертям)
-                    const scoreLines = sortedLines.filter(line => {
-                        const numbers = line.text.match(/\d+/g);
-                        return numbers && numbers.length >= 4;
-                    });
-                    
-                    if (scoreLines.length >= 2) {
-                        // Берем первые две строки с числами
-                        const line1 = scoreLines[0];
-                        const line2 = scoreLines[1];
+                    // Ищем числа в строке
+                    const numbers = line.match(/\d+/g);
+                    if (numbers && numbers.length >= 3) {
+                        // Предполагаем, что это строка с очками команды
+                        const scores = numbers.map(Number);
                         
-                        // Извлекаем числа
-                        const numbers1 = line1.text.match(/\d+/g);
-                        const numbers2 = line2.text.match(/\d+/g);
-                        
-                        if (numbers1 && numbers1.length >= 4) {
-                            team1Scores = numbers1.slice(-4).map(Number);
+                        // Если это первая команда (первая найденная строка с очками)
+                        if (team1Total === 0) {
+                            team1Scores = scores.slice(-4); // Берем последние 4 числа
                             team1Total = team1Scores.reduce((a, b) => a + b, 0);
                             
-                            // Извлекаем название команды (текст до чисел)
-                            const namePart = line1.text.replace(/\d+/g, '').trim();
-                            if (namePart) team1Name = namePart;
-                        }
-                        
-                        if (numbers2 && numbers2.length >= 4) {
-                            team2Scores = numbers2.slice(-4).map(Number);
+                            // Пытаемся извлечь название команды (текст до чисел)
+                            const nameMatch = line.match(/^([^\d]+)/);
+                            if (nameMatch) {
+                                team1Name = nameMatch[1].trim();
+                            }
+                        } 
+                        // Если это вторая команда (вторая найденная строка с очками)
+                        else if (team2Total === 0) {
+                            team2Scores = scores.slice(-4); // Берем последние 4 числа
                             team2Total = team2Scores.reduce((a, b) => a + b, 0);
                             
-                            const namePart = line2.text.replace(/\d+/g, '').trim();
-                            if (namePart) team2Name = namePart;
-                        }
-                    }
-                }
-                
-                // Если через анализ строк не получилось, используем старый метод
-                if (team1Total === 0 || team2Total === 0) {
-                    for (let i = 0; i < Math.min(textLines.length, 10); i++) {
-                        const line = textLines[i];
-                        debugText.innerHTML += `Строка ${i}: "${line}"<br>`;
-                        
-                        const numbers = line.match(/\d+/g);
-                        if (numbers && numbers.length >= 3) {
-                            const scores = numbers.map(Number);
-                            
-                            if (team1Total === 0) {
-                                team1Scores = scores.slice(-4);
-                                team1Total = team1Scores.reduce((a, b) => a + b, 0);
-                                
-                                const nameMatch = line.match(/^([^\d]+)/);
-                                if (nameMatch) team1Name = nameMatch[1].trim();
-                            } else if (team2Total === 0) {
-                                team2Scores = scores.slice(-4);
-                                team2Total = team2Scores.reduce((a, b) => a + b, 0);
-                                
-                                const nameMatch = line.match(/^([^\d]+)/);
-                                if (nameMatch) team2Name = nameMatch[1].trim();
-                                break;
+                            // Пытаемся извлечь название команды (текст до чисел)
+                            const nameMatch = line.match(/^([^\d]+)/);
+                            if (nameMatch) {
+                                team2Name = nameMatch[1].trim();
                             }
+                            break; // Нашли обе команды, выходим
                         }
                     }
                 }
